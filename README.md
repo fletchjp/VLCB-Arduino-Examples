@@ -20,3 +20,5 @@ This is the same code as above, with TaskManagerIO used to control the code for 
 Full VLCB             32010/1382   (31994/1366 in the old location) the difference must be to do with different length of location information.
 NoLEDUserService      31072/1265
 
+This means that the overhead for the task manager is about 4k memory but not much data.
+
