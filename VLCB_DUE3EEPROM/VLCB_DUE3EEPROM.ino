@@ -202,7 +202,7 @@
 ////////////////////////////////////////////////////////////////////////////
 // VLCB library header files
 #include <Controller.h>                   // Controller class
-#include <CANSAM3X8E.h>               // CAN controller
+#include "CANSAM3X8E.h"               // CAN controller
 #include <Switch.h>             // pushbutton switch
 #include <LED.h>                // VLCB LEDs
 #include <Configuration.h>             // module configuration
@@ -277,34 +277,22 @@ const byte LED[NUM_LEDS] = {8, 7};            // LED pin connections through typ
 const byte SWITCH[NUM_SWITCHES] = {9, 6};     // Module Switch takes input to 0V.
 
 // module objects
-Bounce moduleSwitch[NUM_SWITCHES];  //  switch as input
-LEDControl moduleLED[NUM_LEDS];     //  LED as output
-byte switchState[NUM_SWITCHES];
+//Bounce moduleSwitch[NUM_SWITCHES];  //  switch as input
+//LEDControl moduleLED[NUM_LEDS];     //  LED as output
+//byte switchState[NUM_SWITCHES];
 
 //////////////////////////////////////////////////////////////////////////
 
-// CBUS objects
-//CBUSSAM3X8E CBUS;                   // CBUS object
-CBUSConfig config;                    // configuration object
-CBUSSAM3X8E CBUS(&config);             // CBUS object passing config as a reference
-//CBUSLED ledGrn, ledYlw;             // two LED objects
-//CBUSSwitch pb_switch;               // switch object
-#ifdef CBUS_LONG_MESSAGE
-// The Ardunio CBUS library does now support this.
-// create an additional object at the top of the sketch:
-#ifdef CBUS_LONG_MESSAGE_MULTIPLE_LISTEN
-CBUSLongMessageEx cbus_long_message(&CBUS);   // CBUS long message object
-#else
-CBUSLongMessage cbus_long_message(&CBUS);   // CBUS long message object
-#endif
-#endif
 
 // module name, must be 7 characters, space padded.
 const unsigned char PROGMEM mname[7] = { 'D', 'U', 'E', ' ', ' ', ' ', ' ' };
 
 // forward function declarations
-void eventhandler(byte index, byte opc);
-void framehandler(CANFrame *msg);
+void eventhandler(byte, VLCB::VlcbMessage *, bool ison, byte evval);
+void processSerialInput();
+void printConfig();
+void processModuleSwitchChange();
+
 
 #ifdef CBUS_LONG_MESSAGE
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -326,25 +314,25 @@ const byte delay_in_ms_between_messages = 50;
 #endif
 
 //
-/// setup CBUS - runs once at power on from setup()
+/// setup VLCB - runs once at power on from setup()
 //  This now returns true if successful.
-bool setupCBUS()
+void setupVLCB()
 {
   // set config layout parameters
-  config.EE_NVS_START = 10;
-  config.EE_NUM_NVS = 10;
-  config.EE_EVENTS_START = 50;
-  config.EE_MAX_EVENTS = 64;
-  config.EE_NUM_EVS = 1;
-  config.EE_BYTES_PER_EVENT = (config.EE_NUM_EVS + 4);
+  modconfig.EE_NVS_START = 10;
+  modconfig.EE_NUM_NVS = 10;
+  modconfig.EE_EVENTS_START = 50;
+  mocconfig.EE_MAX_EVENTS = 64;
+  modconfig.EE_NUM_EVS = 1;
+  //modconfig.EE_BYTES_PER_EVENT = (config.EE_NUM_EVS + 4);
 // Choose external or internal EEPROM
 #ifdef USE_EXTERNAL_EEPROM
   // This has to come before setEEPROMtype.
   // Default EEPROM_I2C_ADDR = 0x50 defined in CBUSconfig.h
-  config.setExtEEPROMAddress(EEPROM_I2C_ADDR,&Wire1);
-  config.setEEPROMtype(EEPROM_EXTERNAL);
+  modconfig.setExtEEPROMAddress(EEPROM_I2C_ADDR,&Wire1);
+  modconfig.setEEPROMtype(EEPROM_EXTERNAL);
 #else
-  config.setEEPROMtype(EEPROM_INTERNAL);
+  modconfig.setEEPROMtype(EEPROM_INTERNAL);
 #endif  
   // initialise and load configuration
   config.begin();
@@ -356,39 +344,29 @@ bool setupCBUS()
   printConfig();
 
   // set module parameters
-  CBUSParams params(config);
+  VLCB::Parameters params(modconfig);
   params.setVersion(VER_MAJ, VER_MIN, VER_BETA);
   params.setModuleId(MODULE_ID);
-  params.setFlags(PF_FLiM | PF_COMBI);
 #ifdef USE_EXTERNAL_EEPROM
 // Put parameters into the EEPROM
   config.writeBytesEEPROM(config.getEEPROMsize()+1,params.getParams(),params.size());
 #endif
-  // assign to CBUS
-  CBUS.setParams(params.getParams());
-  CBUS.setName((byte *)mname);
+  // assign to controller
+  controller.setParams(params.getParams());
+  controller.setName((byte *)mname);
 
-  // set CBUS LED pins and assign to CBUS
-  //ledGrn.setPin(LED_GRN);
-  //ledYlw.setPin(LED_YLW);
-  //CBUS.setLEDs(ledGrn, ledYlw);
-
-  // initialise CBUS switch and assign to CBUS
-  //pb_switch.setPin(SWITCH0, LOW);
-  //pb_switch.run();
-  //CBUS.setSwitch(pb_switch);
-
-  // module reset - if switch is depressed at startup and module is in SLiM mode
-  //if (pb_switch.isPressed() && !config.FLiM) {
-  //  Serial << F("> switch was pressed at startup in SLiM mode") << endl;
-  //  config.resetModule(ledGrn, ledYlw, pb_switch);
-  //}
+  // opportunity to set default NVs after module reset
+  if (modconfig.isResetFlagSet())
+  {
+    Serial << F("> module has been reset") << endl;
+    modconfig.clearResetFlag();
+  }
 
   // register our CBUS event handler, to receive event messages of learned events
-  CBUS.setEventHandler(eventhandler);
+  ecService.setEventHandler(eventhandler);
 
-  // register our CAN frame handler, to receive *every* CAN frame
-  CBUS.setFrameHandler(framehandler);
+  // set Controller LEDs to indicate mode
+  controller.indicateMode(modconfig.currentMode);
 
 #ifdef CBUS_LONG_MESSAGE
   // subscribe to long messages and register handler
@@ -403,15 +381,12 @@ bool setupCBUS()
   cbus_long_message.setTimeout(1000);
 #endif
 
-  // set CBUS LEDs to indicate the current mode
-  CBUS.indicateMode(config.FLiM);
-
   // configure and start CAN bus and CBUS message processing
   // CBUS.setNumBuffers(2);         // more buffers = more memory used, fewer = less
   // CBUS.setOscFreq(16000000UL);   // select the crystal frequency of the CAN module
   // CBUS.setPins(10, 2);           // select pins for CAN bus CE and interrupt connections
-  CBUS.setControllerInstance(0);    // only actually required for instance 1, instance 0 is the default
-  if (!CBUS.begin() ){
+  canSam3x8e.setControllerInstance(0);    // only actually required for instance 1, instance 0 is the default
+  if (!canSam3x8e.begin() ){
      DEBUG_PRINT ("***** CBUS.begin() FAILED *****");
      return false;
   }
