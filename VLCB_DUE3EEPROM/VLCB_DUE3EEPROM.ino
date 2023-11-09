@@ -190,7 +190,6 @@
 
 // 3rd party libraries
 #include <Streaming.h>
-#include <Bounce2.h>
 #if LCD_DISPLAY || OLED_DISPLAY 
 #include <Wire.h>    // Library for I2C comminications for display
   #if LCD_DISPLAY
@@ -200,23 +199,55 @@
   #endif
 #endif
 
-// CBUS library header files
-#include <CBUSSAM3X8E.h>            // CAN controller and CBUS class
-#include <CBUSswitch.h>             // pushbutton switch
-#include "LEDControl.h"             // CBUS LEDs
-//#include <CBUSLED.h>              // CBUS LEDs
-#include <CBUSconfig.h>             // module configuration
-#include <CBUSParams.h>             // CBUS parameters
-#include <cbusdefs.h>               // MERG CBUS constants
+////////////////////////////////////////////////////////////////////////////
+// VLCB library header files
+#include <Controller.h>                   // Controller class
+#include <CANSAM3X8E.h>               // CAN controller
+#include <Switch.h>             // pushbutton switch
+#include <LED.h>                // VLCB LEDs
+#include <Configuration.h>             // module configuration
+#include <Parameters.h>             // VLCB parameters
+#include <vlcbdefs.hpp>               // VLCB constants
+#include <LEDUserInterface.h>
+#include "MinimumNodeService.h"
+#include "CanService.h"
+#include "NodeVariableService.h"
+#include "EventConsumerService.h"
+#include "EventProducerService.h"
+#include "EventTeachingService.h"
+#include "SerialUserInterface.h"
+#include "CombinedUserInterface.h"
+
+// constants
+const byte VER_MAJ = 0;             // code major version
+const char VER_MIN = 'a';           // code minor version
+const byte VER_BETA = 1;            // code beta sub-version
+const byte MODULE_ID = 99;          // VLCB module type
+
+// Controller objects
+VLCB::Configuration modconfig;               // configuration object
+VLCB::CANSAM3X8E canSam3x8e;                  // CAN transport object
+//VLCB::LEDUserInterface ledUserInterface(LED_GRN, LED_YLW, SWITCH0);
+VLCB::SerialUserInterface serialUserInterface(&modconfig, &canSam3x8e);
+//VLCB::CombinedUserInterface combinedUserInterface(&ledUserInterface, &serialUserInterface);
+VLCB::MinimumNodeService mnService;
+VLCB::CanService canService(&canSam3x8e);
+VLCB::NodeVariableService nvService;
+VLCB::EventConsumerService ecService;
+VLCB::EventTeachingService etService;
+VLCB::EventProducerService epService;
+VLCB::Controller controller(&serialUserInterface, &modconfig, &canSam3x8e, 
+                            { &mnService, &canService, &nvService, &ecService, &epService, &etService }); // Controller object
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // New policy to bring ALL headers above anything else at all.
 // Maybe that is why they are called headers.
 // The only exception would be defines affecting choices in a header.
 ////////////////////////////////////////////////////////////////////////////////////////
-#define VERSION 4.1
-#define CBUS_LONG_MESSAGE
-#define CBUS_LONG_MESSAGE_MULTIPLE_LISTEN
-#define USE_EXTERNAL_EEPROM
+#define VERSION 0.1
+//#define CBUS_LONG_MESSAGE
+//#define CBUS_LONG_MESSAGE_MULTIPLE_LISTEN
+//#define USE_EXTERNAL_EEPROM
 #define DEBUG         1 // set to 0 for no serial debug
 #define OLED_DISPLAY  0 // set to 0 if 128x32 OLED display is not present
 #define LCD_DISPLAY   0 // set to 0 if 4x20 char LCD display is not present
@@ -237,17 +268,6 @@ volatile boolean       showingSpeeds     = false;
 #else
 #define DEBUG_PRINT(S)
 #endif
-
-// constants
-const byte VER_MAJ = 4;                  // code major version
-const char VER_MIN = 'a';                // code minor version
-const byte VER_BETA = 1;                 // code beta sub-version
-const byte MODULE_ID = 99;               // CBUS module type
-
-// These are not being used - not installed.
-//const byte LED_GRN = 4;                  // CBUS green SLiM LED pin
-//const byte LED_YLW = 5;                  // CBUS yellow FLiM LED pin
-//const byte SWITCH0 = 6;                  // CBUS push button switch pin
 
 #define NUM_LEDS 2              // How many LEDs are there?
 #define NUM_SWITCHES 2          // How many switchs are there?
