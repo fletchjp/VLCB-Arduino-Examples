@@ -465,7 +465,7 @@ void loop() {
   /// do CBUS message, switch and LED processing
   //
 
-  CBUS.process();
+  controller.process();
 
 #ifdef CBUS_LONG_MESSAGE
   cbus_long_message.process();
@@ -483,102 +483,6 @@ void loop() {
   //
   /// bottom of loop()
   //
-}
-
-void processSwitches(void)
-{
-  bool is_success = true;
-  for (int i = 0; i < NUM_SWITCHES; i++)
-  {
-    moduleSwitch[i].update();
-    if (moduleSwitch[i].changed())
-    {
-     byte nv = i + 1;
-     byte nvval = config.readNV(nv);
-     byte opCode;
-
-     DEBUG_PRINT(F("> Button ") << i << F(" state change detected"));
-     Serial << F (" NV = ") << nv << F(" NV Value = ") << nvval << endl;
-
-     switch (nvval)
-     {
-      case 0:
-          opCode = (moduleSwitch[i].fell() ? OPC_ACON : OPC_ACOF);
-          DEBUG_PRINT(F("> Button ") << i
-              << (moduleSwitch[i].fell() ? F(" pressed, send 0x") : F(" released, send 0x")) << _HEX(opCode));
-          is_success = sendEvent(opCode, (i + 1));
-          break;
-
-      case 1:
-          if (moduleSwitch[i].fell())
-          {
-            opCode = OPC_ACON;
-            DEBUG_PRINT(F("> Button ") << i << F(" pressed, send 0x") << _HEX(OPC_ACON));
-            is_success = sendEvent(opCode, (i + 1));
-          }
-          break;
-
-      case 2:
-
-          if (moduleSwitch[i].fell())
-          {
-            opCode = OPC_ACOF;
-            DEBUG_PRINT(F("> Button ") << i << F(" pressed, send 0x") << _HEX(OPC_ACOF));
-            is_success = sendEvent(opCode, (i + 1));
-          }
-          break;
-
-      case 3:
-
-          if (moduleSwitch[i].fell())
-          {
-            switchState[i] = !switchState[i];
-            opCode = (switchState[i] ? OPC_ACON : OPC_ACOF);
-            DEBUG_PRINT(F("> Button ") << i
-                << (moduleSwitch[i].fell() ? F(" pressed, send 0x") : F(" released, send 0x")) << _HEX(opCode));
-            is_success = sendEvent(opCode, (i + 1));
-          }
-
-          break;
-
-        /*
-        // Send event to test display on CAN1602BUT.
-      case 99:
-        opCode = (switchState[i] ? OPC_ACON : OPC_ACOF);
-        sendEvent(opCode,testEvent); // Test of new code.
-
-        break; */
-    default:
-        DEBUG_PRINT(F("> Invalid NV value."));
-        break;
-     }
-    }
-  } 
-  if (!is_success) 
-  {
-    DEBUG_PRINT(F("> One of the send message events failed"));
-  }
-}
-
-// Send an event routine according to Module Switch
-bool sendEvent(byte opCode, unsigned int eventNo)
-{
-  CANFrame msg;
-  msg.id = config.CANID;
-  msg.len = 5;
-  msg.data[0] = opCode;
-  msg.data[1] = highByte(config.nodeNum);
-  msg.data[2] = lowByte(config.nodeNum);
-  msg.data[3] = highByte(eventNo);
-  msg.data[4] = lowByte(eventNo);
-
-  bool success = CBUS.sendMessage(&msg);
-  if (success) {
-    DEBUG_PRINT(F("> sent CBUS message with Event Number ") << eventNo);
-  } else {
-    DEBUG_PRINT(F("> error sending CBUS message"));
-  }
-  return success;
 }
 
 #ifdef CBUS_LONG_MESSAGE
