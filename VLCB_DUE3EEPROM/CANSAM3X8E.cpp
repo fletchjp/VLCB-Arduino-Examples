@@ -10,7 +10,7 @@
 #include <Streaming.h>
 
 // VLCB SAM3X8E library
-#include <CANSAM3X8E.h>
+#include "CANSAM3X8E.h"
 
 
 namespace VLCB

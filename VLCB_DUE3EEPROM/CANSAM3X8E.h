@@ -17,13 +17,13 @@ namespace VLCB
 {
 
 // constants
-
-static const byte MCP2515_CS = 10;                          // SPI chip select pin
-static const byte MCP2515_INT = 2;                          // interrupt pin
-static const byte NUM_RX_BUFFS = 4;                         // default value
-static const byte NUM_TX_BUFFS = 2;                         // default value
-static const uint32_t CANBITRATE = 125000UL;                // 125Kb/s - fixed for VLCB
-static const uint32_t OSCFREQ = 16000000UL;                 // crystal frequency default
+// These are getting defined somewhere else.....
+//static const byte MCP2515_CS = 10;                          // SPI chip select pin
+//static const byte MCP2515_INT = 2;                          // interrupt pin
+//static const byte NUM_RX_BUFFS = 4;                         // default value
+//static const byte NUM_TX_BUFFS = 2;                         // default value
+//static const uint32_t CANBITRATE = 125000UL;                // 125Kb/s - fixed for VLCB
+//static const uint32_t OSCFREQ = 16000000UL;                 // crystal frequency default
 
 //
 /// an implementation of the Transport interface class
