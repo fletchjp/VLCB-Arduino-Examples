@@ -22,3 +22,7 @@ NoLEDUserService      31072/1265
 
 This means that the overhead for the task manager is about 4k memory but not much data.
 
+### VLCB_DUE3EEPROM
+
+This a VLCB version of CANDUE3EEPROM which expands CANDUE3 to allow for the optional use of external EEPROM
+
