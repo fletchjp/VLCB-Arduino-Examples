@@ -241,6 +241,10 @@ VLCB::EventProducerService epService;
 VLCB::Controller controller(&serialUserInterface, &modconfig, &canSam3x8e, 
                             { &mnService, &canService, &nvService, &ecService, &epService, &etService }); // Controller object
 
+// module objects  
+VLCB::Switch moduleSwitch(16);            // an example switch as input
+VLCB::LED moduleLED(17);                  // an example LED as output
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // New policy to bring ALL headers above anything else at all.
 // Maybe that is why they are called headers.
@@ -271,20 +275,8 @@ volatile boolean       showingSpeeds     = false;
 #define DEBUG_PRINT(S)
 #endif
 
-#define NUM_LEDS 2              // How many LEDs are there?
-#define NUM_SWITCHES 2          // How many switchs are there?
-
-//Module pins available for use are Pins 3 - 9 and A0 - A5
-const byte LED[NUM_LEDS] = {8, 7};            // LED pin connections through typ. 1K8 resistor
-const byte SWITCH[NUM_SWITCHES] = {9, 6};     // Module Switch takes input to 0V.
-
-// module objects
-//Bounce moduleSwitch[NUM_SWITCHES];  //  switch as input
-//LEDControl moduleLED[NUM_LEDS];     //  LED as output
-//byte switchState[NUM_SWITCHES];
 
 //////////////////////////////////////////////////////////////////////////
-
 
 // module name, must be 7 characters, space padded.
 const unsigned char PROGMEM mname[7] = { 'D', 'U', 'E', ' ', ' ', ' ', ' ' };
@@ -324,7 +316,7 @@ void setupVLCB()
   modconfig.EE_NVS_START = 10;
   modconfig.EE_NUM_NVS = 10;
   modconfig.EE_EVENTS_START = 50;
-  mocconfig.EE_MAX_EVENTS = 64;
+  modconfig.EE_MAX_EVENTS = 64;
   modconfig.EE_NUM_EVS = 1;
   //modconfig.EE_BYTES_PER_EVENT = (config.EE_NUM_EVS + 4);
 // Choose external or internal EEPROM
@@ -334,13 +326,22 @@ void setupVLCB()
   modconfig.setExtEEPROMAddress(EEPROM_I2C_ADDR,&Wire1);
   modconfig.setEEPROMtype(EEPROM_EXTERNAL);
 #else
-  modconfig.setEEPROMtype(EEPROM_INTERNAL);
+  //modconfig.setEEPROMtype(EEPROM_INTERNAL);
 #endif  
   // initialise and load configuration
-  config.begin();
+  controller.begin();
 
-  Serial << F("> mode = ") << ((config.FLiM) ? "FLiM" : "SLiM") << F(", CANID = ") << config.CANID;
-  Serial << F(", NN = ") << config.nodeNum << endl;
+  const char * modeString;
+  switch (modconfig.currentMode)
+  {
+    case MODE_NORMAL: modeString = "Normal"; break;
+    case MODE_SETUP: modeString = "Setup"; break;
+    case MODE_UNINITIALISED: modeString = "Uninitialised"; break;
+    default: modeString = "Unknown"; break;
+  }
+  Serial << F("> mode = (") << _HEX(modconfig.currentMode) << ") " << modeString;
+  Serial << F(", NN = ") << modconfig.nodeNum << endl;
+  Serial << F("> mode = (") << _HEX(modconfig.currentMode) << ") " << modeString;
 
   // show code version and copyright notice
   printConfig();
@@ -351,7 +352,7 @@ void setupVLCB()
   params.setModuleId(MODULE_ID);
 #ifdef USE_EXTERNAL_EEPROM
 // Put parameters into the EEPROM
-  config.writeBytesEEPROM(config.getEEPROMsize()+1,params.getParams(),params.size());
+  modconfig.writeBytesEEPROM(config.getEEPROMsize()+1,params.getParams(),params.size());
 #endif
   // assign to controller
   controller.setParams(params.getParams());
@@ -395,27 +396,10 @@ void setupVLCB()
   return true;
 }
 
-void runLEDs(){
-  // Run the LED code
-  for (int i = 0; i < NUM_LEDS; i++) {
-    moduleLED[i].run();
-  }
-}
 
 void setupModule()
 {
-  // configure the module switches, active low
-  for (int i = 0; i < NUM_SWITCHES; i++)
-  {
-    moduleSwitch[i].attach(SWITCH[i], INPUT_PULLUP);
-    moduleSwitch[i].interval(5);
-    switchState[i] = false;
-  }
-
-  // configure the module LEDs
-  for (int i = 0; i < NUM_LEDS; i++) {
-    moduleLED[i].setPin(LED[i]);
-  } 
+ 
 }
 
 //
@@ -428,7 +412,7 @@ void setup()
   while (!Serial) { delay(10); }
   Serial << endl << endl << F("> CANDUE ** ") << __FILE__ << endl;
 
-  setupCBUS();
+  setupVLCB();
   setupModule();
 
 #if OLED_DISPLAY || LCD_DISPLAY 
@@ -447,9 +431,9 @@ void setup()
 
 
   // Schedule tasks to run every 250 milliseconds.
-  taskManager.scheduleFixedRate(250, runLEDs);
-  taskManager.scheduleFixedRate(250, processSwitches);
-  taskManager.scheduleFixedRate(250, processSerialInput);
+ // taskManager.scheduleFixedRate(250, runLEDs);
+ // taskManager.scheduleFixedRate(250, processSwitches);
+ // taskManager.scheduleFixedRate(250, processSerialInput);
 
   // end of setup
   DEBUG_PRINT(F("> ready"));
@@ -478,7 +462,7 @@ void loop() {
 
   // Run IO_Abstraction tasks.
   // This replaces actions taken here in the previous version.
-  taskManager.runLoop();
+  //taskManager.runLoop();
 
   //
   /// bottom of loop()
@@ -515,83 +499,10 @@ void send_a_long_message() {
 /// it receives the event table index and the CAN frame
 //
 
-void eventhandler(byte index, CANFrame *msg) 
+void eventhandler(byte index, VLCB::VlcbMessage *msg, bool ison, byte evval)
 {
-  byte opc = msg->data[0];
-
-  // as an example, display the opcode and the first EV of this event
-  DEBUG_PRINT(F("> event handler: index = ") << index << F(", opcode = 0x") << _HEX(msg->data[0]));
-  DEBUG_PRINT(F("> event handler: length = ") << msg->len);
-  
-  //Serial << F("> EV1 = ") << config.getEventEVval(index, 1) << endl;
-  unsigned int node_number = (msg->data[1] << 8 ) + msg->data[2];
-  unsigned int event_number = (msg->data[3] << 8 ) + msg->data[4];
-  DEBUG_PRINT(F("> NN = ") << node_number << F(", EN = ") << event_number);
-  DEBUG_PRINT(F("> op_code = ") << opc);
  
-  switch (opc) {
-
-    case OPC_ACON:
-    case OPC_ASON:
-      for (int i = 0; i < NUM_LEDS; i++)
-      {
-        byte ev = i + 1;
-        byte evval = config.getEventEVval(index, ev);
-
-        switch (evval)
-        {
-          case 1:
-            moduleLED[i].on();
-            break;
-
-          case 2:
-            moduleLED[i].flash(500);
-            break;
-
-          case 3:
-            moduleLED[i].flash(250);
-            break;
-
-          default:
-            break;
-        }
-      }
-      break;
-
-    case OPC_ACOF:
-    case OPC_ASOF:
-      for (int i = 0; i < NUM_LEDS; i++)
-      {
-        byte ev = i + 1;
-        byte evval = config.getEventEVval(index, ev);
-
-        if (evval > 0) {
-          moduleLED[i].off();
-        }
-      }
-      break;
-  }
-
-  return;
-}
-
-//
-/// user-defined frame processing function
-/// called from the CBUS library for *every* CAN frame received
-/// it receives a pointer to the received CAN frame
-//
-
-void framehandler(CANFrame *msg) {
-
-  // as an example, format and display the received frame
-
-  Serial << "[ " << (msg->id & 0x7f) << "] [" << msg->len << "] [";
-
-  for (byte d = 0; d < msg->len; d++) {
-    Serial << " 0x" << _HEX(msg->data[d]);
-  }
-
-  Serial << " ]" << endl;
+ 
   return;
 }
 
@@ -790,172 +701,3 @@ void displayChars(const char chars[20], int count)
 }
 
 #endif
-//
-/// command interpreter for serial console input
-//
-
-void processSerialInput(void) {
-
-  byte uev = 0;
-  char msgstr[32], dstr[32];
-
-  if (Serial.available()) {
-
-    char c = Serial.read();
-
-    switch (c) {
-
-      case 'n':
-
-        // node config
-        printConfig();
-
-        // node identity
-        Serial << F("> CBUS node configuration") << endl;
-        Serial << F("> mode = ") << (config.FLiM ? "FLiM" : "SLiM") << F(", CANID = ") << config.CANID << F(", node number = ") << config.nodeNum << endl;
-        Serial << endl;
-        break;
-
-      // New option to see some raw EEPROM
-      case 'd':
-        Serial << F("> stored EEPROM ") << endl;
-        for (byte j = 0; j < 20; j++)
-        {
-          Serial << j << " " << config.readEEPROM(j) << endl;
-        }
-        break;
-
-      case 'e':
-
-        // EEPROM learned event data table
-        Serial << F("> stored events ") << endl;
-        Serial << F("  max events = ") << config.EE_MAX_EVENTS << F(" EVs per event = ") << config.EE_NUM_EVS << F(" bytes per event = ") << config.EE_BYTES_PER_EVENT << endl;
-
-        for (byte j = 0; j < config.EE_MAX_EVENTS; j++) {
-          if (config.getEvTableEntry(j) != 0) {
-            ++uev;
-          }
-        }
-
-        Serial << F("  stored events = ") << uev << F(", free = ") << (config.EE_MAX_EVENTS - uev) << endl;
-        Serial << F("  using ") << (uev * config.EE_BYTES_PER_EVENT) << F(" of ") << (config.EE_MAX_EVENTS * config.EE_BYTES_PER_EVENT) << F(" bytes") << endl << endl;
-
-        Serial << F("  Ev#  |  NNhi |  NNlo |  ENhi |  ENlo | ");
-
-        for (byte j = 0; j < (config.EE_NUM_EVS); j++) {
-          sprintf(dstr, "EV%03d | ", j + 1);
-          Serial << dstr;
-        }
-
-        Serial << F("Hash |") << endl;
-
-        Serial << F(" --------------------------------------------------------------") << endl;
-
-        // for each event data line
-        for (byte j = 0; j < config.EE_MAX_EVENTS; j++) {
-
-          if (config.getEvTableEntry(j) != 0) {
-            sprintf(dstr, "  %03d  | ", j);
-            Serial << dstr;
-
-            // for each data byte of this event
-            for (byte e = 0; e < (config.EE_NUM_EVS + 4); e++) {
-              sprintf(dstr, " 0x%02hx | ", config.readEEPROM(config.EE_EVENTS_START + (j * config.EE_BYTES_PER_EVENT) + e));
-              Serial << dstr;
-            }
-
-            sprintf(dstr, "%4d |", config.getEvTableEntry(j));
-            Serial << dstr << endl;
-          }
-        }
-
-        Serial << endl;
-
-        break;
-
-      // NVs
-      case 'v':
-
-        // note NVs number from 1, not 0
-        Serial << "> Node variables" << endl;
-        Serial << F("   NV   Val") << endl;
-        Serial << F("  --------------------") << endl;
-
-        for (byte j = 1; j <= config.EE_NUM_NVS; j++) {
-          byte v = config.readNV(j);
-          sprintf(msgstr, " - %02d : %3hd | 0x%02hx", j, v, v);
-          Serial << msgstr << endl;
-        }
-
-        Serial << endl << endl;
-
-        break;
-
-      // CAN bus status
-      case 'c':
-
-        CBUS.printStatus();
-        break;
-
-      case 'h':
-        // event hash table
-        config.printEvHashTable(false);
-        break;
-
-      case 'y':
-        // reset CAN bus and CBUS message processing
-        CBUS.reset();
-        break;
-
-      case '*':
-        // reboot
-        config.reboot();
-        break;
-
-      case 'm':
-        // free memory
-        Serial << F("> free SRAM = ") << config.freeSRAM() << F(" bytes") << endl;
-        break;
-
-      case 'r':
-        // renegotiate
-        CBUS.renegotiate();
-        break;
-
-      case 'z':
-        // Reset module, clear EEPROM
-        static bool ResetRq = false;
-        static unsigned long ResWaitTime;
-        if (!ResetRq) {
-          // start timeout timer
-          Serial << F(">Reset & EEPROM wipe requested. Press 'z' again within 2 secs to confirm") << endl;
-          ResWaitTime = millis();
-          ResetRq = true;
-        }
-        else {
-          // This is a confirmed request
-          // 2 sec timeout
-          if (ResetRq && ((millis() - ResWaitTime) > 2000)) {
-            Serial << F(">timeout expired, reset not performed") << endl;
-            ResetRq = false;
-          }
-          else {
-            //Request confirmed within timeout
-            Serial << F(">RESETTING AND WIPING EEPROM") << endl;
-            config.resetModule();
-            ResetRq = false;
-          }
-        }
-        break;
-
-      case '\r':
-      case '\n':
-        Serial << endl;
-        break;
-
-      default:
-        Serial << F("> unknown command ") << c << endl;
-        break;
-    }
-  }
-}
