@@ -54,7 +54,21 @@ public:
   void printStatus(void);
   void setControllerInstance(byte instance = 0);
 
+  virtual unsigned int receiveCounter()override { return _numMsgsRcvd; }
+  virtual unsigned int transmitCounter()override { return _numMsgsRcvd; }
+  virtual unsigned int receiveErrorCounter()override { return canp->receiveErrorCounter(); }
+  virtual unsigned int transmitErrorCounter()override { return canp->transmitErrorCounter(); }
+  virtual unsigned int errorStatus()override { return canp->errorFlagRegister(); }
+
+  ACAN2515 *canp;   // pointer to CAN object so user code can access its members
+
 private:
+  unsigned int _numMsgsSent, _numMsgsRcvd;
+  unsigned long _osc_freq;
+  byte _csPin, _intPin;
+  byte _num_rx_buffers, _num_tx_buffers;
+  bool _poll;
+
   byte _instance;
   CANRaw *_can;
 
