@@ -1,4 +1,10 @@
 /////////////////////////////////////////////////////////////////////////////
+// VLCB_DUE3EEPROM
+// This is being adapted from the CBUS version.
+// It will need a new library item to replace CAN2515.
+// I will start with that and add the external EEPROM next.
+// I will take the LONG_MESSAGE code out of action for now.
+/////////////////////////////////////////////////////////////////////////////
 // CANDUE3EEPROM
 // Version using external EEPROM using I2C over Wire1.
 // Restructure sending of long messages using new ideas.
