@@ -205,6 +205,7 @@
 #include "CANSAM3X8E.h"               // CAN controller
 #include <Switch.h>             // pushbutton switch
 #include <LED.h>                // VLCB LEDs
+#include <DueEepromEmulationStorage.h>
 #include <Configuration.h>             // module configuration
 #include <Parameters.h>             // VLCB parameters
 #include <vlcbdefs.hpp>               // VLCB constants
@@ -225,7 +226,8 @@ const byte VER_BETA = 1;            // code beta sub-version
 const byte MODULE_ID = 99;          // VLCB module type
 
 // Controller objects
-VLCB::Configuration modconfig;               // configuration object
+VLCB::DueEepromEmulationStorage dueStorage;   // DUE simulated EEPROM
+VLCB::Configuration modconfig(&dueStorage);   // configuration object
 VLCB::CANSAM3X8E canSam3x8e;                  // CAN transport object
 //VLCB::LEDUserInterface ledUserInterface(LED_GRN, LED_YLW, SWITCH0);
 VLCB::SerialUserInterface serialUserInterface(&modconfig, &canSam3x8e);
