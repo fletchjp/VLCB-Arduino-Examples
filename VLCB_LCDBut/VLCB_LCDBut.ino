@@ -121,9 +121,9 @@ void setupVLCB()
     case MODE_UNINITIALISED: modeString = "Uninitialised"; break;
     default: modeString = "Unknown"; break;
   }
-  Serial << F("> mode = (") << _HEX(modconfig.currentMode) << ") " << modeString;
   Serial << F(", CANID = ") << modconfig.CANID;
   Serial << F(", NN = ") << modconfig.nodeNum << endl;
+  Serial << F("> mode = (") << _HEX(modconfig.currentMode) << ") " << modeString;
 
   // show code version and copyright notice
   printConfig();
