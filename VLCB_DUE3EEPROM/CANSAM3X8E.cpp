@@ -59,7 +59,7 @@ bool CANSAM3X8E::begin(bool poll, SPIClass spi) {
     return false;
   }
 
-  // Serial << "> CAN controller instance = " << _instance << " initialised successfully" << endl;
+  Serial << "> CAN controller instance = " << _instance << " initialised successfully" << endl;
   return true;
 }
 
@@ -77,9 +77,9 @@ CANMessage CANSAM3X8E::getNextCanMessage(void) {
   ret = _can->read(cf);
 
   if (ret != CAN_MAILBOX_TRANSFER_OK) {
-    // Serial << "> CAN read did not return CAN_MAILBOX_TRANSFER_OK, instance = " << _instance << ", ret = " << ret << endl;
+    Serial << "> CAN read did not return CAN_MAILBOX_TRANSFER_OK, instance = " << _instance << ", ret = " << ret << endl;
   } else {
-    // Serial << "> received CAN message ok, instance = " << _instance << endl;
+    Serial << "> received CAN message ok, instance = " << _instance << endl;
   }
 
   message.id = cf.id;
@@ -117,7 +117,7 @@ bool CANSAM3X8E::sendCanMessage(CANMessage *msg) {
   ret = _can->sendFrame(cf);
 
   if (!ret) {
-    // Serial << "> error sending CAN message, instance = " << _instance << ", ret = " << ret << endl;
+    Serial << "> error sending CAN message, instance = " << _instance << ", ret = " << ret << endl;
   }
 
   return ret;
@@ -166,10 +166,10 @@ void CANSAM3X8E::setNumBuffers(byte num) {
 
 void CANSAM3X8E::setControllerInstance(byte instance) {
 
-  // Serial << "> setting CAN controller instance to " << instance << endl;
+  Serial << "> setting CAN controller instance to " << instance << endl;
   _instance = instance;
   _can = (_instance == 0) ? &Can0 : &Can1;
 }
 
-//
+// End of namespace VLCB
 }
