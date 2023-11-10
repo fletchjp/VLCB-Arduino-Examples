@@ -26,3 +26,8 @@ This means that the overhead for the task manager is about 4k memory but not muc
 
 This a VLCB version of CANDUE3EEPROM which expands CANDUE3 to allow for the optional use of external EEPROM
 
+It has with it files for CANSAM3X8E which provides the CAN interface for the DUE.
+
+The code now compiles and runs and needs more testing.
+
+
