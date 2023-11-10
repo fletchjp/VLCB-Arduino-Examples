@@ -17,6 +17,30 @@
 namespace VLCB
 {
 
+
+//
+/// format and display CAN message
+//
+
+void format_message(CANMessage *msg) {
+
+  char mbuff[80], dbuff[8];
+
+  sprintf(mbuff, "[%03ld] [%d] [", (msg->id & 0x7f), msg->len);
+
+  for (byte i = 0; i < msg->len; i++) {
+    sprintf(dbuff, " %02x", msg->data[i]);
+    strcat(mbuff, dbuff);
+  }
+
+  strcat(mbuff, " ]");
+  Serial << "> " << mbuff << endl;
+
+  return;
+}
+
+//void something() { }
+
 //
 /// constructor
 //
@@ -91,7 +115,7 @@ CANMessage CANSAM3X8E::getNextCanMessage(void) {
 
   ++_numMsgsRcvd;
 
-  // format_message(&_msg);
+  format_message(&message);
   return message;
 }
 
@@ -119,6 +143,7 @@ bool CANSAM3X8E::sendCanMessage(CANMessage *msg) {
   if (!ret) {
     Serial << "> error sending CAN message, instance = " << _instance << ", ret = " << ret << endl;
   }
+  ++_numMsgsSent;
 
   return ret;
 }
@@ -173,3 +198,4 @@ void CANSAM3X8E::setControllerInstance(byte instance) {
 
 // End of namespace VLCB
 }
+
