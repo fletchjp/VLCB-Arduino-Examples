@@ -44,7 +44,7 @@ public:
 #endif
   bool available() override;
   CANMessage getNextCanMessage() override;
-  bool sendCanMessage(CANMessage *msg); override;
+  bool sendCanMessage(CANMessage *msg) override;
   void reset() override;
 
   // these methods are specific to this implementation
