@@ -123,13 +123,20 @@ CANMessage CANSAM3X8E::getNextCanMessage(void) {
 /// send a CBUS message
 //
 
-bool CANSAM3X8E::sendCanMessage(CANMessage *msg) {
+bool CANSAM3X8E::sendCanMessage(CANMessage *msg) // bool rtr, bool ext, byte priority)
+{
+  // note default arguments put here as a fix are not needed. 
+  //bool rtr = false; bool ext = false; byte priority = DEFAULT_PRIORITY;
+  Serial << F("CANSAM3X8E sendCanMessage id=") << (msg->id & 0x7F) << " len=" << msg->len << " rtr=" << msg->rtr;
+  if (msg->len > 0)
+      Serial << " op=" << _HEX(msg->data[0]);
+  Serial << endl;
 
   bool ret;
   CAN_FRAME cf;                         // library-specific CAN message structure
 
-  //makeHeader(msg, priority);            // set the CBUS header - CANID and priority bits
-  // format_message(msg);
+  //makeHeader(msg, priority);          // set the CBUS header - CANID and priority bits
+  format_message(msg);
 
   cf.id = msg->id;
   cf.length = msg->len;
