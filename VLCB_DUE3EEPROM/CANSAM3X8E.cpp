@@ -152,6 +152,10 @@ bool CANSAM3X8E::sendCanMessage(CANMessage *msg) // bool rtr, bool ext, byte pri
   }
   ++_numMsgsSent;
 
+  // Simple workaround for sending many messages. Let the underlying hardware some time to send this message before next.
+  // TODO: Replace this with monitoring of the transmit queue.
+  delay(1);
+
   return ret;
 }
 
