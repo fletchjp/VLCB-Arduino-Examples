@@ -14,6 +14,8 @@ It does not currently find the correct CANID and this is being investigated.
 
 Further use needs more development of the VLCB Arduino library to include event teaching.
 
+The other thing which needs to be done is to implement the option to use external EEPROM. This version relies on a simulated EEPROM which is lost when the code is updated.
+
 John Fletcher 13/11/2023
 
 
