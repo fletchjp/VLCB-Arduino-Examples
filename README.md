@@ -30,4 +30,13 @@ It has with it files for CANSAM3X8E which provides the CAN interface for the DUE
 
 The code now compiles and runs and needs more testing.
 
+It is now working to integrate a module into a CAN configuration using FCU 1.5.4
+
+It is important to have the libraries due_can 2.1.6 and can_common 0.3.0 installed. Earlier versions of due_can available from the Arduino IDE system do NOT work.
+
+There is a residual problem with the CANID allocated which is to be worked on.
+
+John Fletcher 13/11/2023 
+
+
 
