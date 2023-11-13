@@ -34,7 +34,9 @@ void format_message(CANMessage *msg) {
   }
 
   strcat(mbuff, " ]");
-  Serial << "> " << mbuff << endl;
+  Serial << "> " << mbuff;
+  if (msg->rtr) Serial << " rtr = " << msg->rtr;
+  Serial << endl;
 
   return;
 }
@@ -100,10 +102,12 @@ CANMessage CANSAM3X8E::getNextCanMessage(void) {
 
   ret = _can->read(cf);
 
-  if (ret != CAN_MAILBOX_TRANSFER_OK) {
+  if (ret != 1 /*CAN_MAILBOX_TRANSFER_OK */) {
     Serial << "> CAN read did not return CAN_MAILBOX_TRANSFER_OK, instance = " << _instance << ", ret = " << ret << endl;
+    Serial << "> received CAN message has length = " << cf.length << endl;
   } else {
-    Serial << "> received CAN message ok, instance = " << _instance << endl;
+    Serial << "> received CAN message ok, instance = " << _instance << ", length = " << cf.length;
+    Serial << ", rtr = " << cf.rtr << endl;
   }
 
   message.id = cf.id;
