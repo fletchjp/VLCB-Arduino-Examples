@@ -28,7 +28,7 @@ This example is running on a CANDUE with a dual CAN interface.
 
 There is also an external EEPROM which is not yet being used. This will be used to save the configuration which is otherwise lost when the code is reloaded.
 
-This a VLCB version of CANDUE3EEPROM which expands CANDUE3 to allow for the optional use of external EEPROM
+This is a VLCB version of CANDUE3EEPROM which expands CANDUE3 to allow for the optional use of external EEPROM
 
 It has with it files for CANSAM3X8E which provides the CAN interface for the DUE.
 
