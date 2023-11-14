@@ -201,13 +201,16 @@
 
 ////////////////////////////////////////////////////////////////////////////
 // VLCB library header files
-//#define USE_EXTERNAL_EEPROM
-
+// Uncomment this to use external EEPROM
+#define USE_EXTERNAL_EEPROM
+////////////////////////////////////////////////////////////////////////////
 #include <Controller.h>                   // Controller class
 #include "CANSAM3X8E.h"               // CAN controller
 #include <Switch.h>             // pushbutton switch
 #include <LED.h>                // VLCB LEDs
 #ifdef USE_EXTERNAL_EEPROM
+#define EEPROM_I2C_ADDR 0x50
+#include <Wire.h> 
 #include <EepromExternalStorage.h>
 #else
 #include <DueEepromEmulationStorage.h>
@@ -233,7 +236,8 @@ const byte MODULE_ID = 99;          // VLCB module type
 
 // Controller objects
 #ifdef USE_EXTERNAL_EEPROM
-VLCB::EepromExternalStorage externalStorage();
+VLCB::EepromExternalStorage externalStorage(EEPROM_I2C_ADDR,&Wire1);
+VLCB::Configuration modconfig(&externalStorage);   // configuration object
 #else
 VLCB::DueEepromEmulationStorage dueStorage;   // DUE simulated EEPROM
 VLCB::Configuration modconfig(&dueStorage);   // configuration object
@@ -333,8 +337,8 @@ void setupVLCB()
 #ifdef USE_EXTERNAL_EEPROM
   // This has to come before setEEPROMtype.
   // Default EEPROM_I2C_ADDR = 0x50 defined in CBUSconfig.h
-  modconfig.setExtEEPROMAddress(EEPROM_I2C_ADDR,&Wire1);
-  modconfig.setEEPROMtype(EEPROM_EXTERNAL);
+  //modconfig.setExtEEPROMAddress(EEPROM_I2C_ADDR,&Wire1);
+  //modconfig.setEEPROMtype(EEPROM_EXTERNAL);
 #else
   //modconfig.setEEPROMtype(EEPROM_INTERNAL);
 #endif  
@@ -362,7 +366,7 @@ void setupVLCB()
   params.setModuleId(MODULE_ID);
 #ifdef USE_EXTERNAL_EEPROM
 // Put parameters into the EEPROM
-  modconfig.writeBytesEEPROM(config.getEEPROMsize()+1,params.getParams(),params.size());
+  //modconfig.writeBytesEEPROM(config.getEEPROMsize()+1,params.getParams(),params.size());
 #endif
   // assign to controller
   controller.setParams(params.getParams());
@@ -571,7 +575,8 @@ void printConfig(void) {
 #endif
 #endif
 #ifdef USE_EXTERNAL_EEPROM
-  Serial << F("> using external EEPROM size ") << config.getEEPROMsize() << endl;
+  //Serial << F("> using external EEPROM size ") << config.getEEPROMsize() << endl;
+  Serial << F("> using external EEPROM") << endl;
 #endif
   #if OLED_DISPLAY || LCD_DISPLAY
     #if OLED_DISPLAY
