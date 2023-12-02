@@ -26,7 +26,7 @@ This means that the overhead for the task manager is about 4k memory but not muc
 
 This example is running on a CANDUE with a dual CAN interface.
 
-There is also an external EEPROM which is not yet being used. This will be used to save the configuration which is otherwise lost when the code is reloaded.
+There is also an external EEPROM which is now being used optionally. This is used to save the configuration which is otherwise lost when the code is reloaded.
 
 This is a VLCB version of CANDUE3EEPROM which expands CANDUE3 to allow for the optional use of external EEPROM
 
@@ -40,7 +40,7 @@ It is important to have the libraries due_can 2.1.6 and can_common 0.3.0 install
 
 There is a residual problem with the CANID allocated which is to be worked on.
 
-John Fletcher 13/11/2023 
+John Fletcher 2/12/2023 
 
 
 
