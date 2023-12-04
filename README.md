@@ -1,5 +1,8 @@
 # VLCB-Arduino-Examples
- Examples using the VLCB Arduino library
+ 
+Examples using the VLCB Arduino library
+ 
+These examples have now been autoformatted. 
  
 ## Arduino UNO Examples
 
