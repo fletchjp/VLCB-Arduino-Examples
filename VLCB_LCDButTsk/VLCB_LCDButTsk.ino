@@ -9,13 +9,13 @@
 
 ////////////////////////////////////////////////////////////////////////////
 // VLCB library header files
-#include <Controller.h>                   // Controller class
-#include <CAN2515.h>               // CAN controller
-#include <Switch.h>             // pushbutton switch
-#include <LED.h>                // VLCB LEDs
-#include <Configuration.h>             // module configuration
-#include <Parameters.h>             // VLCB parameters
-#include <vlcbdefs.hpp>               // VLCB constants
+#include <Controller.h>     // Controller class
+#include <CAN2515.h>        // CAN controller
+#include <Switch.h>         // pushbutton switch
+#include <LED.h>            // VLCB LEDs
+#include <Configuration.h>  // module configuration
+#include <Parameters.h>     // VLCB parameters
+#include <vlcbdefs.hpp>     // VLCB constants
 #include <LEDUserInterface.h>
 #include "MinimumNodeService.h"
 #include "CanService.h"
@@ -27,18 +27,18 @@
 #include "CombinedUserInterface.h"
 
 // constants
-const byte VER_MAJ = 1;             // code major version
-const char VER_MIN = 'a';           // code minor version
-const byte VER_BETA = 0;            // code beta sub-version
-const byte MODULE_ID = 99;          // VLCB module type
+const byte VER_MAJ = 1;     // code major version
+const char VER_MIN = 'a';   // code minor version
+const byte VER_BETA = 0;    // code beta sub-version
+const byte MODULE_ID = 99;  // VLCB module type
 
-const byte LED_GRN = 4;             // VLCB green Unitialised LED pin
-const byte LED_YLW = 7;             // VLCB yellow Normal LED pin
-const byte SWITCH0 = 8;             // VLCB push button switch pin
+const byte LED_GRN = 4;  // VLCB green Unitialised LED pin
+const byte LED_YLW = 7;  // VLCB yellow Normal LED pin
+const byte SWITCH0 = 8;  // VLCB push button switch pin
 
 // Controller objects
-VLCB::Configuration modconfig;               // configuration object
-VLCB::CAN2515 can2515;                  // CAN transport object
+VLCB::Configuration modconfig;  // configuration object
+VLCB::CAN2515 can2515;          // CAN transport object
 //VLCB::LEDUserInterface ledUserInterface(LED_GRN, LED_YLW, SWITCH0);
 VLCB::SerialUserInterface serialUserInterface(&modconfig, &can2515);
 //VLCB::CombinedUserInterface combinedUserInterface(&ledUserInterface, &serialUserInterface);
@@ -48,12 +48,12 @@ VLCB::NodeVariableService nvService;
 VLCB::EventConsumerService ecService;
 VLCB::EventTeachingService etService;
 VLCB::EventProducerService epService;
-VLCB::Controller controller(&serialUserInterface, &modconfig, &can2515, 
-                            { &mnService, &canService, &nvService, &ecService, &epService, &etService }); // Controller object
+VLCB::Controller controller(&serialUserInterface, &modconfig, &can2515,
+                            { &mnService, &canService, &nvService, &ecService, &epService, &etService });  // Controller object
 
-// module objects  
-VLCB::Switch moduleSwitch(16);            // an example switch as input
-VLCB::LED moduleLED(17);                  // an example LED as output
+// module objects
+VLCB::Switch moduleSwitch(16);  // an example switch as input
+VLCB::LED moduleLED(17);        // an example LED as output
 
 // module name, must be 7 characters, space padded.
 unsigned char mname[7] = { 'L', 'C', 'D', 'B', 'u', 't', ' ' };
@@ -80,14 +80,14 @@ I have also played with the values.
 */
 #include <LiquidCrystal.h>
 //LCD pin to Arduino
-const int pin_RS = 8; 
-const int pin_EN = 9; 
-const int pin_d4 = 4; 
-const int pin_d5 = 5; 
-const int pin_d6 = 6; 
-const int pin_d7 = 7; 
-const int pin_BL = 10; 
-LiquidCrystal lcd( pin_RS,  pin_EN,  pin_d4,  pin_d5,  pin_d6,  pin_d7);
+const int pin_RS = 8;
+const int pin_EN = 9;
+const int pin_d4 = 4;
+const int pin_d5 = 5;
+const int pin_d6 = 6;
+const int pin_d7 = 7;
+const int pin_BL = 10;
+LiquidCrystal lcd(pin_RS, pin_EN, pin_d4, pin_d5, pin_d6, pin_d7);
 
 int x;
 int prevx = 0;
@@ -96,7 +96,7 @@ int prevrange = 0;
 int y = 0;
 
 // Serial IO
-#define SERIAL_SPEED            115200   // Speed of the serial port.
+#define SERIAL_SPEED 115200  // Speed of the serial port.
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -111,13 +111,12 @@ void setupVLCB()
   modconfig.EE_MAX_EVENTS = 32;
   modconfig.EE_PRODUCED_EVENTS = 1;
   modconfig.EE_NUM_EVS = 1;
- 
+
   // initialise and load configuration
   controller.begin();
 
-  const char * modeString;
-  switch (modconfig.currentMode)
-  {
+  const char *modeString;
+  switch (modconfig.currentMode) {
     case MODE_NORMAL: modeString = "Normal"; break;
     case MODE_SETUP: modeString = "Setup"; break;
     case MODE_UNINITIALISED: modeString = "Uninitialised"; break;
@@ -134,19 +133,18 @@ void setupVLCB()
   VLCB::Parameters params(modconfig);
   params.setVersion(VER_MAJ, VER_MIN, VER_BETA);
   params.setModuleId(MODULE_ID);
- 
+
   // assign to Controller
   controller.setParams(params.getParams());
   controller.setName(mname);
 
-//  {
-//    Serial << F("> switch was pressed at startup in Uninitialised mode") << endl;
-//    modconfig.resetModule(&userInterface);
-//  }
+  //  {
+  //    Serial << F("> switch was pressed at startup in Uninitialised mode") << endl;
+  //    modconfig.resetModule(&userInterface);
+  //  }
 
   // opportunity to set default NVs after module reset
-  if (modconfig.isResetFlagSet())
-  {
+  if (modconfig.isResetFlagSet()) {
     Serial << F("> module has been reset") << endl;
     modconfig.clearResetFlag();
   }
@@ -157,12 +155,11 @@ void setupVLCB()
   // set Controller LEDs to indicate mode
   controller.indicateMode(modconfig.currentMode);
 
- // configure and start CAN bus and VLCB message processing
-  can2515.setNumBuffers(2, 1);      // more buffers = more memory used, fewer = less
-  can2515.setOscFreq(16000000UL);   // select the crystal frequency of the CAN module
-  can2515.setPins(15, 2);           // select pins for CAN bus CE and interrupt connections
-  if (!can2515.begin())
-  {
+  // configure and start CAN bus and VLCB message processing
+  can2515.setNumBuffers(2, 1);     // more buffers = more memory used, fewer = less
+  can2515.setOscFreq(16000000UL);  // select the crystal frequency of the CAN module
+  can2515.setPins(15, 2);          // select pins for CAN bus CE and interrupt connections
+  if (!can2515.begin()) {
     Serial << F("> error starting VLCB") << endl;
   }
 }
@@ -170,87 +167,91 @@ void setupVLCB()
 bool have_error_flag;
 
 
-void setup() {
+void setup()
+{
   // put your setup code here, to run once:
 
   // Initialise
-  Serial.begin(SERIAL_SPEED);             // Start Serial IO.
-  Serial << endl << endl << F("> ** VLCB LCD Buttons Task ** ") << __FILE__ << endl;
-   //analogWrite(pin_d6,50);
+  Serial.begin(SERIAL_SPEED);  // Start Serial IO.
+  Serial << endl
+         << endl
+         << F("> ** VLCB LCD Buttons Task ** ") << __FILE__ << endl;
+  //analogWrite(pin_d6,50);
   setupVLCB();
   have_error_flag = false;
 
   lcd.begin(16, 2);
-  lcd.setCursor(0,0);
+  lcd.setCursor(0, 0);
   lcd.print("VLCB LCD Task");
-  lcd.setCursor(0,1);
+  lcd.setCursor(0, 1);
   lcd.print("Press Key:");
   // This is at the end of setup()
   taskManager.scheduleFixedRate(250, checkA0);
 
   // end of setup
-  Serial << F("> ready") << endl << endl;
-} 
+  Serial << F("> ready") << endl
+         << endl;
+}
 
-void checkA0() {
+void checkA0()
+{
   // put your main code here, to run repeatedly:
- x = analogRead (0);
- if (x < 175){         // was 50
-  range = 1;
- } else if (x < 350){ // was 250
-  range = 2;
- } else if (x < 500){ // unchanged
-  range = 3;
- } else if (x < 800){ // was 650
-  range = 4;
- } else if (x < 850){ // unchanged
-  range = 5;
- } //else { range = 0; }
- if (range != prevrange) {
- Serial.print(range);
- Serial.print(" ");
- Serial.print(x);
- lcd.setCursor(10,1);
- switch (range) {
-  case 1:
-  {
-   lcd.print ("Right ");
-   //if (y == 0) {
-   Serial.println(" Right");
-     //y = 1;
-   //}
-   break;
+  x = analogRead(0);
+  if (x < 175) {  // was 50
+    range = 1;
+  } else if (x < 350) {  // was 250
+    range = 2;
+  } else if (x < 500) {  // unchanged
+    range = 3;
+  } else if (x < 800) {  // was 650
+    range = 4;
+  } else if (x < 850) {  // unchanged
+    range = 5;
+  }  //else { range = 0; }
+  if (range != prevrange) {
+    Serial.print(range);
+    Serial.print(" ");
+    Serial.print(x);
+    lcd.setCursor(10, 1);
+    switch (range) {
+      case 1:
+        {
+          lcd.print("Right ");
+          //if (y == 0) {
+          Serial.println(" Right");
+          //y = 1;
+          //}
+          break;
+        }
+      case 2:
+        {
+          lcd.print("Up    ");
+          Serial.println(" Up");
+          break;
+        }
+      case 3:
+        {
+          lcd.print("Down  ");
+          Serial.println(" Down");
+          break;
+        }
+      case 4:
+        {
+          lcd.print("Left  ");
+          Serial.println(" Left ");
+          break;
+        }
+      case 5:
+        {
+          lcd.print("Select");
+          Serial.println(" Select");
+          break;
+        }
+      default:
+        break;
+    }
+    prevrange = range;
   }
-  case 2:
-  {
-   lcd.print ("Up    ");
-   Serial.println(" Up");
-   break;
-  }
-  case 3:
-  {
-   lcd.print ("Down  ");
-   Serial.println(" Down");
-   break;
-  }
-  case 4:
-  {
-   lcd.print ("Left  ");
-   Serial.println(" Left ");
-   break;
-  }
-  case 5:
-  {
-   lcd.print ("Select");
-   Serial.println(" Select");
-   break;
-  }
-  default:
-  break;
- }
- prevrange = range;
- }
-
 }
 
 //
@@ -277,13 +278,11 @@ void loop()
   //
   /// check CAN message buffers
   //
-  if (can2515.canp->receiveBufferPeakCount() > can2515.canp->receiveBufferSize())
-  {
+  if (can2515.canp->receiveBufferPeakCount() > can2515.canp->receiveBufferSize()) {
     Serial << F("> receive buffer overflow") << endl;
   }
 
-  if (can2515.canp->transmitBufferPeakCount(0) > can2515.canp->transmitBufferSize(0))
-  {
+  if (can2515.canp->transmitBufferPeakCount(0) > can2515.canp->transmitBufferSize(0)) {
     Serial << F("> transmit buffer overflow") << endl;
   }
 
@@ -291,8 +290,7 @@ void loop()
   /// check CAN bus state
   //
   byte s = can2515.canp->errorFlagRegister();
-  if (s != 0 && !have_error_flag)
-  {
+  if (s != 0 && !have_error_flag) {
     Serial << F("> error flag register is non-zero") << endl;
     have_error_flag = true;
   }
@@ -314,10 +312,9 @@ void loop()
 //
 void processModuleSwitchChange()
 {
-  if (moduleSwitch.stateChanged())
-  {
+  if (moduleSwitch.stateChanged()) {
     bool state = moduleSwitch.isPressed();
-    byte eventNumber = 1;  
+    byte eventNumber = 1;
     epService.sendEvent(state, eventNumber);
   }
 }
@@ -338,21 +335,15 @@ void eventhandler(byte index, VLCB::VlcbMessage *msg, bool ison, byte evval)
 
   // set the LED according to the opcode of the received event, if the first EV equals 0
   // we turn on the LED and if the first EV equals 1 we use the blink() method of the LED object as an example
-  if (ison)
-  {
-    if (evval == 0)
-    {
+  if (ison) {
+    if (evval == 0) {
       Serial << F("> switching the LED on") << endl;
       moduleLED.on();
-    }
-    else if (evval == 1)
-    {
+    } else if (evval == 1) {
       Serial << F("> switching the LED to blink") << endl;
       moduleLED.blink();
     }
-  }
-  else
-  {
+  } else {
     Serial << F("> switching the LED off") << endl;
     moduleLED.off();
   }
