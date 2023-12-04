@@ -11,10 +11,9 @@
 #include <CanTransport.h>
 #include <SPI.h>
 
-#include <due_can.h>            // Due CAN library header file
+#include <due_can.h>  // Due CAN library header file
 
-namespace VLCB
-{
+namespace VLCB {
 
 // constants
 // These are getting defined somewhere else.....
@@ -38,7 +37,7 @@ public:
 
   // these methods are declared virtual in the base class and must be implemented by the derived class
 #ifdef ARDUINO_ARCH_RP2040
-  bool begin(bool poll = false, SPIClassRP2040 spi = SPI);    // note default args
+  bool begin(bool poll = false, SPIClassRP2040 spi = SPI);  // note default args
 #else
   bool begin(bool poll = false, SPIClass spi = SPI);
 #endif
@@ -54,13 +53,28 @@ public:
   void printStatus(void);
   void setControllerInstance(byte instance = 0);
 
-  virtual unsigned int receiveCounter()override { return _numMsgsRcvd; }
-  virtual unsigned int transmitCounter()override { return _numMsgsSent; }
-  virtual unsigned int receiveErrorCounter()override { return _can->get_rx_error_cnt(); }
-  virtual unsigned int transmitErrorCounter()override { return _can->get_tx_error_cnt(); }
-  virtual unsigned int errorStatus()override { return _can->get_status(); }
+  virtual unsigned int receiveCounter() override
+  {
+    return _numMsgsRcvd;
+  }
+  virtual unsigned int transmitCounter() override
+  {
+    return _numMsgsSent;
+  }
+  virtual unsigned int receiveErrorCounter() override
+  {
+    return _can->get_rx_error_cnt();
+  }
+  virtual unsigned int transmitErrorCounter() override
+  {
+    return _can->get_tx_error_cnt();
+  }
+  virtual unsigned int errorStatus() override
+  {
+    return _can->get_status();
+  }
 
-  ACAN2515 *canp;   // pointer to CAN object so user code can access its members
+  ACAN2515 *canp;  // pointer to CAN object so user code can access its members
 
 private:
   unsigned int _numMsgsSent, _numMsgsRcvd;
@@ -71,7 +85,6 @@ private:
 
   byte _instance;
   CANRaw *_can;
-
 };
 
 void format_message(CANMessage *msg);

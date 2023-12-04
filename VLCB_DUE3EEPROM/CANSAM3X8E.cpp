@@ -14,15 +14,15 @@
 #include "CANSAM3X8E.h"
 
 
-namespace VLCB
-{
+namespace VLCB {
 
 
 //
 /// format and display CAN message
 //
 
-void format_message(CANMessage *msg) {
+void format_message(CANMessage *msg)
+{
 
   char mbuff[80], dbuff[8];
 
@@ -47,21 +47,18 @@ void format_message(CANMessage *msg) {
 /// constructor
 //
 CANSAM3X8E::CANSAM3X8E()
-  : _num_rx_buffers(NUM_RX_BUFFS)
-  , _num_tx_buffers(NUM_TX_BUFFS)
-  , _csPin(MCP2515_CS)
-  , _intPin(MCP2515_INT)
-  , _osc_freq(OSCFREQ)
+  : _num_rx_buffers(NUM_RX_BUFFS), _num_tx_buffers(NUM_TX_BUFFS), _csPin(MCP2515_CS), _intPin(MCP2515_INT), _osc_freq(OSCFREQ)
 {
-   _instance = 0;
-   _can = &Can0;
+  _instance = 0;
+  _can = &Can0;
 }
 
 //
 /// initialise the CAN controller and buffers, and attach the ISR
 //
 
-bool CANSAM3X8E::begin(bool poll, SPIClass spi) {
+bool CANSAM3X8E::begin(bool poll, SPIClass spi)
+{
 
   uint32_t init_ret;
   int init_watch;
@@ -80,7 +77,7 @@ bool CANSAM3X8E::begin(bool poll, SPIClass spi) {
   // set filter to permissive
   init_watch = _can->watchFor();
 
-  if (init_watch == -1){ // Test changed by JPF
+  if (init_watch == -1) {  // Test changed by JPF
     Serial << "> CAN error from watchFor(), ret = " << init_watch << endl;
     return false;
   }
@@ -89,12 +86,14 @@ bool CANSAM3X8E::begin(bool poll, SPIClass spi) {
   return true;
 }
 
-bool CANSAM3X8E::available(void) {
+bool CANSAM3X8E::available(void)
+{
 
   return _can->available();
 }
 
-CANMessage CANSAM3X8E::getNextCanMessage(void) {
+CANMessage CANSAM3X8E::getNextCanMessage(void)
+{
 
   uint32_t ret;
   CAN_FRAME cf;
@@ -127,17 +126,17 @@ CANMessage CANSAM3X8E::getNextCanMessage(void) {
 /// send a CBUS message
 //
 
-bool CANSAM3X8E::sendCanMessage(CANMessage *msg) // bool rtr, bool ext, byte priority)
+bool CANSAM3X8E::sendCanMessage(CANMessage *msg)  // bool rtr, bool ext, byte priority)
 {
-  // note default arguments put here as a fix are not needed. 
+  // note default arguments put here as a fix are not needed.
   //bool rtr = false; bool ext = false; byte priority = DEFAULT_PRIORITY;
   Serial << F("CANSAM3X8E sendCanMessage id=") << (msg->id & 0x7F) << " len=" << msg->len << " rtr=" << msg->rtr;
   if (msg->len > 0)
-      Serial << " op=" << _HEX(msg->data[0]);
+    Serial << " op=" << _HEX(msg->data[0]);
   Serial << endl;
 
   bool ret;
-  CAN_FRAME cf;                         // library-specific CAN message structure
+  CAN_FRAME cf;  // library-specific CAN message structure
 
   //makeHeader(msg, priority);          // set the CBUS header - CANID and priority bits
   format_message(msg);
@@ -167,7 +166,8 @@ bool CANSAM3X8E::sendCanMessage(CANMessage *msg) // bool rtr, bool ext, byte pri
 /// display the CAN bus status instrumentation
 //
 
-void CANSAM3X8E::printStatus(void) {
+void CANSAM3X8E::printStatus(void)
+{
 
   return;
 }
@@ -176,15 +176,16 @@ void CANSAM3X8E::printStatus(void) {
 /// reset the CAN driver
 //
 
-void CANSAM3X8E::reset(void) {
-
+void CANSAM3X8E::reset(void)
+{
 }
 
 //
 /// set the TX and RX pins
 //
 
-void CANSAM3X8E::setPins(byte txPin, byte rxPin) {
+void CANSAM3X8E::setPins(byte txPin, byte rxPin)
+{
 
   return;
 }
@@ -193,7 +194,8 @@ void CANSAM3X8E::setPins(byte txPin, byte rxPin) {
 /// set the depth of the TX and RX queues
 //
 
-void CANSAM3X8E::setNumBuffers(byte num) {
+void CANSAM3X8E::setNumBuffers(byte num)
+{
 
   return;
 }
@@ -204,7 +206,8 @@ void CANSAM3X8E::setNumBuffers(byte num) {
 /// set the CAN controller peripheral instance, there are two, default is zero
 //
 
-void CANSAM3X8E::setControllerInstance(byte instance) {
+void CANSAM3X8E::setControllerInstance(byte instance)
+{
 
   Serial << "> setting CAN controller instance to " << instance << endl;
   _instance = instance;
@@ -213,4 +216,3 @@ void CANSAM3X8E::setControllerInstance(byte instance) {
 
 // End of namespace VLCB
 }
-
