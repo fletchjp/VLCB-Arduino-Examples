@@ -333,15 +333,6 @@ void setupVLCB()
   modconfig.EE_MAX_EVENTS = 64;
   modconfig.EE_NUM_EVS = 1;
   //modconfig.EE_BYTES_PER_EVENT = (config.EE_NUM_EVS + 4);
-// Choose external or internal EEPROM
-#ifdef USE_EXTERNAL_EEPROM
-  // This has to come before setEEPROMtype.
-  // Default EEPROM_I2C_ADDR = 0x50 defined in CBUSconfig.h
-  //modconfig.setExtEEPROMAddress(EEPROM_I2C_ADDR,&Wire1);
-  //modconfig.setEEPROMtype(EEPROM_EXTERNAL);
-#else
-                                             //modconfig.setEEPROMtype(EEPROM_INTERNAL);
-#endif
   // initialise and load configuration
   controller.begin();
 
