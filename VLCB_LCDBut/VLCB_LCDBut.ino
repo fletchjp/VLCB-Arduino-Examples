@@ -15,7 +15,6 @@
 #include <Configuration.h>  // module configuration
 #include <Parameters.h>     // VLCB parameters
 #include <vlcbdefs.hpp>     // VLCB constants
-#include <LEDUserInterface.h>
 #include "MinimumNodeService.h"
 #include "CanService.h"
 #include "NodeVariableService.h"
@@ -38,21 +37,15 @@ const byte SWITCH0 = 8;  // VLCB push button switch pin
 // Controller objects
 VLCB::Configuration modconfig;  // configuration object
 VLCB::CAN2515 can2515;          // CAN transport object
-VLCB::LEDUserInterface ledUserInterface(LED_GRN, LED_YLW, SWITCH0);
 VLCB::SerialUserInterface serialUserInterface(&modconfig, &can2515);
-VLCB::CombinedUserInterface combinedUserInterface(&ledUserInterface, &serialUserInterface);
 VLCB::MinimumNodeService mnService;
 VLCB::CanService canService(&can2515);
 VLCB::NodeVariableService nvService;
 VLCB::EventConsumerService ecService;
 VLCB::EventTeachingService etService;
 VLCB::EventProducerService epService;
-VLCB::Controller controller(&combinedUserInterface, &modconfig, &can2515,
+VLCB::Controller controller(&serialUserInterface, &modconfig, &can2515,
                             { &mnService, &canService, &nvService, &ecService, &epService, &etService });  // Controller object
-
-// module objects
-VLCB::Switch moduleSwitch(16);  // an example switch as input
-VLCB::LED moduleLED(17);        // an example LED as output
 
 // module name, must be 7 characters, space padded.
 unsigned char mname[7] = { 'L', 'C', 'D', 'B', 'u', 't', ' ' };
@@ -61,7 +54,6 @@ unsigned char mname[7] = { 'L', 'C', 'D', 'B', 'u', 't', ' ' };
 void eventhandler(byte, VLCB::VlcbMessage *, bool ison, byte evval);
 void processSerialInput();
 void printConfig();
-void processModuleSwitchChange();
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -261,17 +253,6 @@ void loop()
   controller.process();
 
   //
-  /// give the switch and LED code some time to run
-  //
-  moduleSwitch.run();
-  moduleLED.run();
-
-  //
-  /// Check if smich changed and do any processing for this change.
-  //
-  processModuleSwitchChange();
-
-  //
   /// check CAN message buffers
   //
   if (can2515.canp->receiveBufferPeakCount() > can2515.canp->receiveBufferSize()) {
@@ -302,17 +283,6 @@ void loop()
 /// as an example, it must be have been pressed or released for at least half a second
 /// then send a long VLCB event with opcode ACON for on and ACOF for off
 
-/// you can just watch for this event in FCU or JMRI, or teach it to another VLCB consumer module
-//
-void processModuleSwitchChange()
-{
-  if (moduleSwitch.stateChanged()) {
-    bool state = moduleSwitch.isPressed();
-    byte eventNumber = 1;
-    epService.sendEvent(state, eventNumber);
-  }
-}
-
 //
 /// user-defined event processing function
 /// called from the VLCB library when a learned event is received
@@ -327,20 +297,6 @@ void eventhandler(byte index, VLCB::VlcbMessage *msg, bool ison, byte evval)
   // read the value of the first event variable (EV) associated with this learned event
   Serial << F("> EV1 = ") << evval << endl;
 
-  // set the LED according to the opcode of the received event, if the first EV equals 0
-  // we turn on the LED and if the first EV equals 1 we use the blink() method of the LED object as an example
-  if (ison) {
-    if (evval == 0) {
-      Serial << F("> switching the LED on") << endl;
-      moduleLED.on();
-    } else if (evval == 1) {
-      Serial << F("> switching the LED to blink") << endl;
-      moduleLED.blink();
-    }
-  } else {
-    Serial << F("> switching the LED off") << endl;
-    moduleLED.off();
-  }
 }
 
 //
