@@ -60,7 +60,6 @@ IoAbstractionRef dfRobotKeys = inputFromDfRobotShield();
 #include <Configuration.h>  // module configuration
 #include <Parameters.h>     // VLCB parameters
 #include <vlcbdefs.hpp>     // VLCB constants
-#include <LEDUserInterface.h>
 #include "MinimumNodeService.h"
 #include "CanService.h"
 #include "NodeVariableService.h"
@@ -70,22 +69,26 @@ IoAbstractionRef dfRobotKeys = inputFromDfRobotShield();
 #include "SerialUserInterface.h"
 #include "CombinedUserInterface.h"
 
+////////////DEFINE MODULE/////////////////////////////////////////////////
+/// Use these values for the VLCB outputs from the display shield buttons
+/// These values give intial values which are not used elsewhere.
+int button = -1;
+int prevbutton = -1;
+
 // constants
-const byte VER_MAJ = 1;     // code major version
+const byte VER_MAJ = 2;     // code major version
 const char VER_MIN = 'a';   // code minor version
 const byte VER_BETA = 0;    // code beta sub-version
-const byte MODULE_ID = 99;  // VLCB module type
+const byte MODULE_ID = 81;  // VLCB module type
 
-const byte LED_GRN = 4;  // VLCB green Unitialised LED pin
-const byte LED_YLW = 7;  // VLCB yellow Normal LED pin
-const byte SWITCH0 = 8;  // VLCB push button switch pin
+#define NUM_NVS 10
+// This defines an array to hold the state of each button.
+byte buttonState[NUM_NVS];
 
 // Controller objects
 VLCB::Configuration modconfig;  // configuration object
 VLCB::CAN2515 can2515;          // CAN transport object
-//VLCB::LEDUserInterface ledUserInterface(LED_GRN, LED_YLW, SWITCH0);
 VLCB::SerialUserInterface serialUserInterface(&modconfig, &can2515);
-//VLCB::CombinedUserInterface combinedUserInterface(&ledUserInterface, &serialUserInterface);
 VLCB::MinimumNodeService mnService;
 VLCB::CanService canService(&can2515);
 VLCB::NodeVariableService nvService;
@@ -141,6 +144,156 @@ int y = 0;
 // Serial IO
 #define SERIAL_SPEED 115200  // Speed of the serial port.
 
+// This is following the methods in EzyBus_master to provide error messages.
+// These have been limited to 16 chars to go on an LCD 2 by 16 display.
+// blank_string is used to cancel an error message.
+const char blank_string[] PROGMEM = "                ";
+const char error_string_0[] PROGMEM = "no error";
+const char error_string_1[] PROGMEM = "Test message";
+const char error_string_2[] PROGMEM = "Emergency Stop";
+const char error_string_3[] PROGMEM = "CANbus error";
+const char error_string_4[] PROGMEM = "invalid error";
+
+const char* const error_string_table[] PROGMEM = {
+  blank_string, error_string_0, error_string_1, error_string_2, error_string_3, error_string_4
+};
+
+#define MAX_ERROR_NO 5
+
+// Buffer for string output.
+// This has been made safe for line termination.
+#define MAX_LENGTH_OF_STRING 16
+#define LENGTH_OF_BUFFER (MAX_LENGTH_OF_STRING + 1)
+char error_buffer[LENGTH_OF_BUFFER];
+
+void getErrorMessage(int i);
+
+
+// This is new in this version of the code and may be useful elsewhere.
+// It is used to transfer error details to the DrawingEvent
+// which is why it is declared here.
+struct Error {
+  int i;
+  byte x;
+  byte y;
+  Error()
+    : i(0), x(0), y(0) {}
+  Error(int ii, byte xx, byte yy)
+    : i(ii), x(xx), y(yy) {}
+  Error(const Error& e)
+    : i(e.i), x(e.x), y(e.y) {}
+};
+
+/**
+ * Here we create an event that handles all the drawing for an application, in this case printing out readings
+ * of a sensor when changed. It uses polling and immediate triggering to show both examples
+ */
+class DrawingEvent : public BaseEvent
+{
+private:
+  volatile bool emergency;  // if an event comes from an external interrupt the variable must be volatile.
+  bool hasChanged;
+  bool hasKey;
+  char key[7];
+  bool hasError;
+  Error error;
+public:
+  /** This constructor sets the initial values for various variables. */
+  DrawingEvent()
+  {
+    hasChanged = false;
+    hasKey = false;
+    //key = "      ";
+    hasError = false;
+  }
+  /**
+     * This is called by task manager every time the number of microseconds returned expires, if you trigger the
+     * event it will run the exec(), if you complete the event, it will be removed from task manager.
+     * @return the number of micros before calling again. 
+     */
+  uint32_t timeOfNextCheck() override
+  {
+    setTriggered(hasChanged);
+    return millisToMicros(500);  // no point refreshing more often on an LCD, as its unreadable
+  }
+
+ /**
+     * This is called when the event is triggered, it prints all the data onto the screen.
+     * Note that each source of input has its own bool variable.
+     * This ensures that only the items needing output are executed.
+     */
+  void exec() override
+  {
+    hasChanged = false;
+
+    if (hasKey) {
+      hasKey = false;
+      lcd.setCursor(10, 1);
+      lcd.print(key);
+    }
+    if (hasError) {
+      getErrorMessage(error.i);
+      lcd.setCursor(error.x, error.y);
+      lcd.write("E: ");
+      lcd.write(error_buffer);
+      hasError = false;
+    }
+  }
+
+  /* This provides for the logging of the key information
+       This is an example of something coming from an internal event. */
+  void drawKey(const char* whichKey)
+  {
+    memcpy(key, whichKey, 7);  //= whichKey;
+    hasKey = true;
+    hasChanged = true;  // we are happy to wait out the 500 millis
+  }
+ /* This provides for the logging of the error information.
+     * This is an example of something coming from an external event.
+     * The Error object holds the data for plotting. */
+  void displayError(const Error& e)
+  {
+    error = e;
+    hasError = true;
+    hasChanged = true;  // we are happy to wait out the 500 millis
+  }
+ /**
+     * Triggers an emergency that requires immediate update of the screen
+     * @param isEmergency if there is an urgent notification
+     * This is not used at present and is included from the source example.
+     */
+  void triggerEmergency(bool isEmergency)
+  {
+    emergency = isEmergency;
+    markTriggeredAndNotify();  // get on screen asap.
+  }
+};
+
+// create an instance of the above class
+DrawingEvent drawingEvent;
+
+// Add check for invalid error
+void getErrorMessage(int i)
+{
+  if (i >= 0 && i <= MAX_ERROR_NO) {
+    strncpy_P(error_buffer, (char*)pgm_read_word(&(error_string_table[i])), MAX_LENGTH_OF_STRING);
+  } else {
+    strncpy_P(error_buffer, (char*)pgm_read_word(&(error_string_table[MAX_ERROR_NO])), MAX_LENGTH_OF_STRING);
+  }
+}
+
+
+void serialPrintError(int i)
+{
+  getErrorMessage(i);
+  Serial.print(error_buffer);
+}
+void serialPrintErrorln(int i)
+{
+  getErrorMessage(i);
+  Serial.println(error_buffer);
+}
+
 /////////////////////////////////////////////////////////////////////
 //
 /// setup VLCB - runs once at power on from setup()
@@ -149,7 +302,7 @@ void setupVLCB()
 {
   // set config layout parameters
   modconfig.EE_NVS_START = 10;
-  modconfig.EE_NUM_NVS = 10;
+  modconfig.EE_NUM_NVS = NUM_NVS;
   modconfig.EE_EVENTS_START = 20;
   modconfig.EE_MAX_EVENTS = 32;
   modconfig.EE_PRODUCED_EVENTS = 1;
@@ -210,6 +363,64 @@ void setupVLCB()
 bool have_error_flag;
 
 
+void logKeyPressed(int pin, const char* whichKey, bool heldDown)
+{
+  drawingEvent.drawKey(whichKey);
+  Serial.print("Key ");
+  Serial.print(whichKey);
+  Serial.println(heldDown ? " Held" : " Pressed");
+  button = pin + 1;  // Increment to avoid event 0
+}
+
+/**
+ * Along with using functions to receive callbacks when a button is pressed, we can
+ * also use a class that implements the SwitchListener interface. Here is an example
+ * of implementing that interface. You have both choices, function callback or
+ * interface implementation.
+ */
+class MyKeyListener : public SwitchListener
+{
+private:
+  const char* whatKey;
+public:
+  // This is the constructor where we configure our instance
+  MyKeyListener(const char* what)
+  {
+    whatKey = what;
+  }
+
+  // when a key is pressed, this is called
+  void onPressed(pinid_t pin, bool held) override
+  {
+    logKeyPressed(pin, whatKey, held);
+    button = pin + 1;
+  }
+
+  // when a key is released this is called.
+  void onReleased(pinid_t pin, bool held) override
+  {
+    Serial.print("Release ");
+    logKeyPressed(pin, whatKey, held);
+  }
+};
+
+
+MyKeyListener selectKeyListener("SELECT");
+
+void setup1602()
+{
+  lcd.begin(16, 2);
+  lcd.setCursor(0, 0);
+  lcd.print("VLCBshield LCDBut");
+  lcd.setCursor(0, 1);
+  lcd.print("Press Key:");
+}
+
+
+
+
+
+
 void setup()
 {
   // put your setup code here, to run once:
@@ -222,80 +433,17 @@ void setup()
   //analogWrite(pin_d6,50);
   setupVLCB();
   have_error_flag = false;
+  setup1602();
 
-  lcd.begin(16, 2);
-  lcd.setCursor(0, 0);
-  lcd.print("VLCB LCD Task");
-  lcd.setCursor(0, 1);
-  lcd.print("Press Key:");
   // This is at the end of setup()
-  taskManager.scheduleFixedRate(250, checkA0);
+  //taskManager.scheduleFixedRate(250, checkA0);
 
   // end of setup
   Serial << F("> ready") << endl
          << endl;
 }
 
-void checkA0()
-{
-  // put your main code here, to run repeatedly:
-  x = analogRead(0);
-  if (x < 175) {  // was 50
-    range = 1;
-  } else if (x < 350) {  // was 250
-    range = 2;
-  } else if (x < 500) {  // unchanged
-    range = 3;
-  } else if (x < 800) {  // was 650
-    range = 4;
-  } else if (x < 850) {  // unchanged
-    range = 5;
-  }  //else { range = 0; }
-  if (range != prevrange) {
-    Serial.print(range);
-    Serial.print(" ");
-    Serial.print(x);
-    lcd.setCursor(10, 1);
-    switch (range) {
-      case 1:
-        {
-          lcd.print("Right ");
-          //if (y == 0) {
-          Serial.println(" Right");
-          //y = 1;
-          //}
-          break;
-        }
-      case 2:
-        {
-          lcd.print("Up    ");
-          Serial.println(" Up");
-          break;
-        }
-      case 3:
-        {
-          lcd.print("Down  ");
-          Serial.println(" Down");
-          break;
-        }
-      case 4:
-        {
-          lcd.print("Left  ");
-          Serial.println(" Left ");
-          break;
-        }
-      case 5:
-        {
-          lcd.print("Select");
-          Serial.println(" Select");
-          break;
-        }
-      default:
-        break;
-    }
-    prevrange = range;
-  }
-}
+
 
 //
 /// loop - runs forever
