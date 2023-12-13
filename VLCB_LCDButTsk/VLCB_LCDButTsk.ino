@@ -1,10 +1,54 @@
 // VLCB_LCDButTsk
-// This is a version of a code with a long name.
-// Adapted to run with VLCB and now adding a Task
+// This is the VLCB version similar to the CANshield_LCDBut
+// This example is designed to work with the Arduino CAN shield (MERG Kit 110) with an Arduino UNO.
+// The Kit 110 shield is placed on the Arduino UNO and a second shield placed on top.
+// https://www.dfrobot.com/product-51.html (DFR0009)
+// This shield has a 2 by 16 character LCD display and a set of buttons.
+// The code allows for CBUS events to be sent using the buttons.
+// What the button actions do can be configured.
+// Currently the display shows the button actions.
+// It can be extended to respond to incoming CBUS events.
+//////////////////////////////////////////////////////////////////////////////////
+// NOTE: This code does not support the Button and LEDs for CBUS configuration.
+//       This is because the display uses the same pins.
+//       In any case, the button and LEDs are hidden behind the display shield.
+///////////////////////////////////////////////////////////////////////////////////
+// Pin Use map UNO:
+// Digital pin 2          Interupt CAN
+// Digital pin 3 (PWM)    Not used
+// Digital pin 4          LCD pin_d4
+// Digital pin 5 (PWM)    LCD pin_d5
+// Digital pin 6 (PWM)    LCD pin_d6
+// Digital pin 7          LCD pin_d7
+// Digital pin 8          LCD pin_RS
+// Digital pin 9 (PWM)    LCD pin_EN
+// Digital pin 10         LCD backlight pin - this would normally be for the CS
+// Digital pin 11 (MOSI)  SI    CAN
+// Digital pin 12 (MISO)  SO    CAN
+// Digital pin 13 (SCK)   Sck   CAN
+
+// Digital pin 14 / Analog pin 0  Analog input from buttons
+// Digital pin 15 / Analog pin 1 (SS)    CS    CAN
+// Digital pin 16 / Analog pin 2  Not used
+// Digital pin 17 / Analog pin 3  Not used
+// Digital / Analog pin 4     Not Used - reserved for I2C
+// Digital / Analog pin 5     Not Used - reserved for I2C
+//////////////////////////////////////////////////////////////////////////
+
+// IoAbstraction libraries
+#include <IoAbstraction.h>
+#include <DfRobotInputAbstraction.h>
+#include <TaskManagerIO.h>
+#include <DeviceEvents.h>
+#include <LiquidCrystalIO.h>
+
+/// This uses the default settings for analog ranges.
+IoAbstractionRef dfRobotKeys = inputFromDfRobotShield();
+
+/// It is in fact set as default defining dfRobotKeys.
+#define ANALOG_IN_PIN A0
 
 // 3rd party libraries
-#include <IoAbstraction.h>
-#include <TaskManagerIO.h>
 #include <Streaming.h>
 
 ////////////////////////////////////////////////////////////////////////////
@@ -78,7 +122,6 @@ Using data from here:
 https://wiki.dfrobot.com/Arduino_LCD_KeyPad_Shield__SKU__DFR0009_
 I have also played with the values.
 */
-#include <LiquidCrystal.h>
 //LCD pin to Arduino
 const int pin_RS = 8;
 const int pin_EN = 9;
