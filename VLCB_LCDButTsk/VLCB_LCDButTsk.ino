@@ -83,7 +83,7 @@ const byte MODULE_ID = 81;  // VLCB module type
 
 #define NUM_NVS 10
 // This defines an array to hold the state of each button.
-byte buttonState[NUM_NVS];
+//byte buttonState[NUM_NVS];
 
 // Controller objects
 VLCB::Configuration modconfig;  // configuration object
@@ -138,7 +138,7 @@ int y = 0;
 
 // Serial IO
 #define SERIAL_SPEED 115200  // Speed of the serial port.
-
+/*
 // This is following the methods in EzyBus_master to provide error messages.
 // These have been limited to 16 chars to go on an LCD 2 by 16 display.
 // blank_string is used to cancel an error message.
@@ -162,8 +162,8 @@ const char* const error_string_table[] PROGMEM = {
 char error_buffer[LENGTH_OF_BUFFER];
 
 void getErrorMessage(int i);
-
-
+*/
+/*
 // This is new in this version of the code and may be useful elsewhere.
 // It is used to transfer error details to the DrawingEvent
 // which is why it is declared here.
@@ -178,6 +178,7 @@ struct Error {
   Error(const Error& e)
     : i(e.i), x(e.x), y(e.y) {}
 };
+*/
 
 /**
  * Here we create an event that handles all the drawing for an application, in this case printing out readings
@@ -190,8 +191,8 @@ private:
   bool hasChanged;
   bool hasKey;
   char key[7];
-  bool hasError;
-  Error error;
+  //bool hasError;
+  //Error error;
 public:
   /** This constructor sets the initial values for various variables. */
   DrawingEvent()
@@ -199,7 +200,7 @@ public:
     hasChanged = false;
     hasKey = false;
     //key = "      ";
-    hasError = false;
+    //hasError = false;
   }
   /**
      * This is called by task manager every time the number of microseconds returned expires, if you trigger the
@@ -226,6 +227,7 @@ public:
       lcd.setCursor(10, 1);
       lcd.print(key);
     }
+    /*
     if (hasError) {
       getErrorMessage(error.i);
       lcd.setCursor(error.x, error.y);
@@ -233,6 +235,7 @@ public:
       lcd.write(error_buffer);
       hasError = false;
     }
+    */
   }
 
   /* This provides for the logging of the key information
@@ -246,12 +249,14 @@ public:
  /* This provides for the logging of the error information.
      * This is an example of something coming from an external event.
      * The Error object holds the data for plotting. */
+/*
   void displayError(const Error& e)
   {
     error = e;
     hasError = true;
     hasChanged = true;  // we are happy to wait out the 500 millis
   }
+  */
  /**
      * Triggers an emergency that requires immediate update of the screen
      * @param isEmergency if there is an urgent notification
@@ -267,6 +272,7 @@ public:
 // create an instance of the above class
 DrawingEvent drawingEvent;
 
+/*
 // Add check for invalid error
 void getErrorMessage(int i)
 {
@@ -288,7 +294,7 @@ void serialPrintErrorln(int i)
   getErrorMessage(i);
   Serial.println(error_buffer);
 }
-
+*/
 /////////////////////////////////////////////////////////////////////
 //
 /// setup VLCB - runs once at power on from setup()
@@ -329,11 +335,6 @@ void setupVLCB()
   controller.setParams(params.getParams());
   controller.setName(mname);
 
-  //  {
-  //    Serial << F("> switch was pressed at startup in Uninitialised mode") << endl;
-  //    modconfig.resetModule(&userInterface);
-  //  }
-
   // opportunity to set default NVs after module reset
   if (modconfig.isResetFlagSet()) {
     Serial << F("> module has been reset") << endl;
@@ -357,6 +358,14 @@ void setupVLCB()
 
 bool have_error_flag;
 
+/*
+void setupModule()
+{
+  for (int i = 0; i < NUM_NVS; i++) {
+    buttonState[i] = false;
+  }
+}
+*/
 
 void logKeyPressed(int pin, const char* whichKey, bool heldDown)
 {
@@ -411,6 +420,39 @@ void setup1602()
   lcd.print("Press Key:");
 }
 
+void setupSwitches()
+{
+  // initialise the switches component with the DfRobot shield as the input method.
+  // Note that switches is the sole instance of SwitchInput
+  switches.initialise(dfRobotKeys, false);  // df robot is always false for 2nd parameter.
+
+  // now we add the switches, each one just logs the key press, the last parameter to addSwitch
+  // is the repeat frequency is optional, when not set it implies not repeating.
+  switches.addSwitch(
+    DF_KEY_DOWN, [](pinid_t pin, bool held) {
+      logKeyPressed(pin, "DOWN  ", held);
+    },
+    20);
+  switches.addSwitch(
+    DF_KEY_UP, [](pinid_t pin, bool held) {
+      logKeyPressed(pin, "UP    ", held);
+    },
+    20);
+  switches.addSwitch(
+    DF_KEY_LEFT, [](pinid_t pin, bool held) {
+      logKeyPressed(pin, "LEFT  ", held);
+    },
+    20);
+  switches.addSwitch(
+    DF_KEY_RIGHT, [](pinid_t pin, bool held) {
+      logKeyPressed(pin, "RIGHT ", held);
+    },
+    20);
+  //switches.onRelease(DF_KEY_RIGHT, [](pinid_t /*pin*/, bool) { Serial.println("RIGHT has been released");});
+
+  switches.addSwitchListener(DF_KEY_SELECT, &selectKeyListener);
+}
+
 
 void setup()
 {
@@ -425,6 +467,8 @@ void setup()
   setupVLCB();
   have_error_flag = false;
   setup1602();
+  //setupModule();
+  setupSwitches();
 
   // This is at the end of setup()
   //taskManager.scheduleFixedRate(250, checkA0);
