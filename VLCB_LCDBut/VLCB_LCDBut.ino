@@ -22,11 +22,11 @@
 #include "EventProducerService.h"
 #include "EventTeachingService.h"
 #include "SerialUserInterface.h"
-#include "CombinedUserInterface.h"
+//#include "CombinedUserInterface.h"
 
 // constants
 const byte VER_MAJ = 1;     // code major version
-const char VER_MIN = 'a';   // code minor version
+const char VER_MIN = 'b';   // code minor version
 const byte VER_BETA = 0;    // code beta sub-version
 const byte MODULE_ID = 99;  // VLCB module type
 
@@ -37,15 +37,15 @@ const byte SWITCH0 = 8;  // VLCB push button switch pin
 // Controller objects
 VLCB::Configuration modconfig;  // configuration object
 VLCB::CAN2515 can2515;          // CAN transport object
-VLCB::SerialUserInterface serialUserInterface(&modconfig, &can2515);
+VLCB::SerialUserInterface serialUserInterface(&can2515);
 VLCB::MinimumNodeService mnService;
 VLCB::CanService canService(&can2515);
 VLCB::NodeVariableService nvService;
 VLCB::EventConsumerService ecService;
 VLCB::EventTeachingService etService;
 VLCB::EventProducerService epService;
-VLCB::Controller controller(&serialUserInterface, &modconfig, &can2515,
-                            { &mnService, &canService, &nvService, &ecService, &epService, &etService });  // Controller object
+VLCB::Controller controller( &modconfig,
+                            { &mnService, &serialUserInterface, &canService, &nvService, &ecService, &epService, &etService });  // Controller object
 
 // module name, must be 7 characters, space padded.
 unsigned char mname[7] = { 'L', 'C', 'D', 'B', 'u', 't', ' ' };
