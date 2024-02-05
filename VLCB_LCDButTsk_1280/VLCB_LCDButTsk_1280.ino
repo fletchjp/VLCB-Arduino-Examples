@@ -423,7 +423,7 @@ void setup1602()
 {
   lcd.begin(16, 2);
   lcd.setCursor(0, 0);
-  lcd.print("VLCBshield LCDBut");
+  lcd.print("VLCBshieldLCDBut");
   lcd.setCursor(0, 1);
   lcd.print("Press Key:");
 }
