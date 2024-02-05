@@ -18,5 +18,8 @@ The other thing which needs to be done is to implement the option to use externa
 
 John Fletcher 13/11/2023
 
+5/2/2024 Updated for the latest version of the VLCB Arduino library.
+
+
 
 
