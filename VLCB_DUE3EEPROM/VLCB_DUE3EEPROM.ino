@@ -231,7 +231,7 @@
 
 // constants
 const byte VER_MAJ = 1;     // code major version
-const char VER_MIN = 'a';   // code minor version
+const char VER_MIN = 'b';   // code minor version
 const byte VER_BETA = 1;    // code beta sub-version
 const byte MODULE_ID = 99;  // VLCB module type
 
