@@ -16,6 +16,27 @@ Note that the CS pin is changed from 10 to 15 for this hardware.
 
 Full VLCB             28074/1315
 
+### VLCBLCDButTsk
+
+This is the same code as above, with TaskManagerIO used to control the code for the analog buttons. This is very tight on memory and I want to experiment to see what of VLCB I can remove to save memory.
+
+Full VLCB             32010/1382   (31994/1366 in the old location) the difference must be to do with different length of location information.
+NoLEDUserService      31072/1265
+
+This means that the overhead for the task manager is about 4k memory but not much data.
+
+This module is now too big for a UNO. See the example below for the MEGA 1280
+
+## Arduino MEGA 1280 Examples
+
+The MEGA 1280 is no longer an official Arduino offering.
+
+There are clones available and it is a step between a UNO and a MEGA 2560.
+
+The Arduino IDE has to be set to distinguish between the two models. Some libraries do not detect the 1280 properly.
+
+There has to be some adjustment of the SPI pins used for the CAN connection for CBUS.
+
 ### VLCBLCDBut_1280
 
 This is code to use the DFRobot LCD shield with buttons. This is running currently without events.
@@ -26,22 +47,13 @@ Note that the CS pin is changed from 10 to 53 for this hardware. INT pin is 19.
 
 No LED user service   27292/1102
 
-### VLCBLCDButTsk
-
-This is the same code as above, with TaskManagerIO used to control the code for the analog buttons. This is very tight on memory and I want to experiment to see what of VLCB I can remove to save memory.
-
-Full VLCB             32010/1382   (31994/1366 in the old location) the difference must be to do with different length of location information.
-NoLEDUserService      31072/1265
-
-This means that the overhead for the task manager is about 4k memory but not much data.
-
-This module is now too big for a UNO.
-
 ### VLCBLCDButTsk_1280
 
-This is a version of the previous example for the MEGA 1280 with the same pin changes.
+This is a version of the VLCBLCDButTsk example for the MEGA 1280 with the same pin changes.
 
 NoLEDUserService      35198/12691
+
+## Arduino DUE examples
 
 ### VLCB_DUE3EEPROM
 
