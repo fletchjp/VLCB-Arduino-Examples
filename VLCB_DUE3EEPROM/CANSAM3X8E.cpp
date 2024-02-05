@@ -21,7 +21,7 @@ namespace VLCB {
 /// format and display CAN message
 //
 
-void format_message(CANMessage *msg)
+void format_message(CANFrame *msg)
 {
 
   char mbuff[80], dbuff[8];
@@ -92,12 +92,12 @@ bool CANSAM3X8E::available(void)
   return _can->available();
 }
 
-CANMessage CANSAM3X8E::getNextCanMessage(void)
+CANFrame CANSAM3X8E::getNextCanFrame(void)
 {
 
   uint32_t ret;
   CAN_FRAME cf;
-  CANMessage message;
+  CANFrame message;
 
   ret = _can->read(cf);
 
@@ -126,11 +126,11 @@ CANMessage CANSAM3X8E::getNextCanMessage(void)
 /// send a CBUS message
 //
 
-bool CANSAM3X8E::sendCanMessage(CANMessage *msg)  // bool rtr, bool ext, byte priority)
+bool CANSAM3X8E::sendCanFrame(CANFrame *msg)  // bool rtr, bool ext, byte priority)
 {
   // note default arguments put here as a fix are not needed.
   //bool rtr = false; bool ext = false; byte priority = DEFAULT_PRIORITY;
-  Serial << F("CANSAM3X8E sendCanMessage id=") << (msg->id & 0x7F) << " len=" << msg->len << " rtr=" << msg->rtr;
+  Serial << F("CANSAM3X8E sendCanFrame id=") << (msg->id & 0x7F) << " len=" << msg->len << " rtr=" << msg->rtr;
   if (msg->len > 0)
     Serial << " op=" << _HEX(msg->data[0]);
   Serial << endl;
@@ -151,7 +151,7 @@ bool CANSAM3X8E::sendCanMessage(CANMessage *msg)  // bool rtr, bool ext, byte pr
   ret = _can->sendFrame(cf);
 
   if (!ret) {
-    Serial << "> error sending CAN message, instance = " << _instance << ", ret = " << ret << endl;
+    Serial << "> error sending CAN frame, instance = " << _instance << ", ret = " << ret << endl;
   }
   ++_numMsgsSent;
 

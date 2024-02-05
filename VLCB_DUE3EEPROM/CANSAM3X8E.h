@@ -10,7 +10,7 @@
 #include <Controller.h>
 #include <CanTransport.h>
 #include <SPI.h>
-
+//#include <ACAN2515.h>           // ACAN2515 library
 #include <due_can.h>  // Due CAN library header file
 
 namespace VLCB {
@@ -42,8 +42,8 @@ public:
   bool begin(bool poll = false, SPIClass spi = SPI);
 #endif
   bool available() override;
-  CANMessage getNextCanMessage() override;
-  bool sendCanMessage(CANMessage *msg) override;
+  CANFrame getNextCanFrame() override;
+  bool sendCanFrame(CANFrame *msg) override;
   void reset() override;
 
   // these methods are specific to this implementation
@@ -74,7 +74,7 @@ public:
     return _can->get_status();
   }
 
-  ACAN2515 *canp;  // pointer to CAN object so user code can access its members
+  //ACAN2515 *canp;  // pointer to CAN object so user code can access its members
 
 private:
   unsigned int _numMsgsSent, _numMsgsRcvd;
@@ -82,12 +82,12 @@ private:
   byte _csPin, _intPin;
   byte _num_rx_buffers, _num_tx_buffers;
   bool _poll;
-
+ 
   byte _instance;
   CANRaw *_can;
 };
 
-void format_message(CANMessage *msg);
+void format_message(CANFrame *msg);
 
 
 }

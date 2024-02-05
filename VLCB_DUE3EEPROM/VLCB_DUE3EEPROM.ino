@@ -202,7 +202,7 @@
 ////////////////////////////////////////////////////////////////////////////
 // VLCB library header files
 // Uncomment this to use external EEPROM
-#define USE_EXTERNAL_EEPROM
+//#define USE_EXTERNAL_EEPROM
 ////////////////////////////////////////////////////////////////////////////
 #include <Controller.h>  // Controller class
 #include "CANSAM3X8E.h"  // CAN controller
@@ -213,6 +213,7 @@
 #include <Wire.h>
 #include <EepromExternalStorage.h>
 #else
+//#include <CreateDefaultStorageForPlatform.h>
 #include <DueEepromEmulationStorage.h>
 #endif
 #include <Configuration.h>  // module configuration
@@ -226,7 +227,7 @@
 #include "EventProducerService.h"
 #include "EventTeachingService.h"
 #include "SerialUserInterface.h"
-#include "CombinedUserInterface.h"
+//#include "CombinedUserInterface.h"
 
 // constants
 const byte VER_MAJ = 1;     // code major version
@@ -244,7 +245,7 @@ VLCB::Configuration modconfig(&dueStorage);  // configuration object
 #endif
 VLCB::CANSAM3X8E canSam3x8e;  // CAN transport object
 //VLCB::LEDUserInterface ledUserInterface(LED_GRN, LED_YLW, SWITCH0);
-VLCB::SerialUserInterface serialUserInterface(&modconfig, &canSam3x8e);
+VLCB::SerialUserInterface serialUserInterface(&canSam3x8e);
 //VLCB::CombinedUserInterface combinedUserInterface(&ledUserInterface, &serialUserInterface);
 VLCB::MinimumNodeService mnService;
 VLCB::CanService canService(&canSam3x8e);
@@ -252,8 +253,8 @@ VLCB::NodeVariableService nvService;
 VLCB::EventConsumerService ecService;
 VLCB::EventTeachingService etService;
 VLCB::EventProducerService epService;
-VLCB::Controller controller(&serialUserInterface, &modconfig, &canSam3x8e,
-                            { &mnService, &canService, &nvService, &ecService, &epService, &etService });  // Controller object
+VLCB::Controller controller( &modconfig, //&canSam3x8e,
+                            { &mnService, &serialUserInterface, &canService, &nvService, &ecService, &epService, &etService });  // Controller object
 
 // module objects
 VLCB::Switch moduleSwitch(16);  // an example switch as input
