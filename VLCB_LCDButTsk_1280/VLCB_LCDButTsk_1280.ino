@@ -108,6 +108,10 @@ void eventhandler(byte, VLCB::VlcbMessage *, bool ison, byte evval);
 void processSerialInput();
 void printConfig();
 
+//CBUS pins
+const byte CAN_INT_PIN = 19;
+const byte CAN_CS_PIN = 53; // Changed from 10 because of the LCD shield.
+
 const unsigned long CAN_OSC_FREQ = 16000000UL;     // Oscillator frequency on the CAN2515 board
 
 
@@ -352,9 +356,9 @@ void setupVLCB()
   controller.indicateMode(modconfig.currentMode);
 
   // configure and start CAN bus and VLCB message processing
-  can2515.setNumBuffers(2, 1);     // more buffers = more memory used, fewer = less
+  can2515.setNumBuffers(2, 2);     // more buffers = more memory used, fewer = less
   can2515.setOscFreq(CAN_OSC_FREQ);  // select the crystal frequency of the CAN module
-  can2515.setPins(15, 2);          // select pins for CAN bus CE and interrupt connections
+  can2515.setPins(CAN_CS_PIN, CAN_INT_PIN);  // select pins for CAN bus CS and interrupt connections
   if (!can2515.begin()) {
     Serial << F("> error starting VLCB") << endl;
   }
