@@ -67,7 +67,7 @@ IoAbstractionRef dfRobotKeys = inputFromDfRobotShield();
 #include "EventProducerService.h"
 #include "EventTeachingService.h"
 #include "SerialUserInterface.h"
-#include "CombinedUserInterface.h"
+//#include "CombinedUserInterface.h"
 
 ////////////DEFINE MODULE/////////////////////////////////////////////////
 /// Use these values for the VLCB outputs from the display shield buttons
@@ -77,7 +77,7 @@ int prevbutton = -1;
 
 // constants
 const byte VER_MAJ = 2;     // code major version
-const char VER_MIN = 'a';   // code minor version
+const char VER_MIN = 'b';   // code minor version
 const byte VER_BETA = 0;    // code beta sub-version
 const byte MODULE_ID = 81;  // VLCB module type
 
@@ -88,15 +88,15 @@ const byte MODULE_ID = 81;  // VLCB module type
 // Controller objects
 VLCB::Configuration modconfig;  // configuration object
 VLCB::CAN2515 can2515;          // CAN transport object
-VLCB::SerialUserInterface serialUserInterface(&modconfig, &can2515);
+VLCB::SerialUserInterface serialUserInterface(&can2515);
 VLCB::MinimumNodeService mnService;
 VLCB::CanService canService(&can2515);
 VLCB::NodeVariableService nvService;
 VLCB::EventConsumerService ecService;
 VLCB::EventTeachingService etService;
 VLCB::EventProducerService epService;
-VLCB::Controller controller(&serialUserInterface, &modconfig, &can2515,
-                            { &mnService, &canService, &nvService, &ecService, &epService, &etService });  // Controller object
+VLCB::Controller controller( &modconfig,
+                            { &mnService,&serialUserInterface, &canService, &nvService, &ecService, &epService, &etService });  // Controller object
 
 // module name, must be 7 characters, space padded.
 unsigned char mname[7] = { 'L', 'C', 'D', 'B', 'u', 't', ' ' };
@@ -105,6 +105,8 @@ unsigned char mname[7] = { 'L', 'C', 'D', 'B', 'u', 't', ' ' };
 void eventhandler(byte, VLCB::VlcbMessage *, bool ison, byte evval);
 void processSerialInput();
 void printConfig();
+
+const unsigned long CAN_OSC_FREQ = 16000000UL;     // Oscillator frequency on the CAN2515 board
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -349,7 +351,7 @@ void setupVLCB()
 
   // configure and start CAN bus and VLCB message processing
   can2515.setNumBuffers(2, 1);     // more buffers = more memory used, fewer = less
-  can2515.setOscFreq(16000000UL);  // select the crystal frequency of the CAN module
+  can2515.setOscFreq(CAN_OSC_FREQ);  // select the crystal frequency of the CAN module
   can2515.setPins(15, 2);          // select pins for CAN bus CE and interrupt connections
   if (!can2515.begin()) {
     Serial << F("> error starting VLCB") << endl;
