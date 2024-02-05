@@ -16,6 +16,16 @@ Note that the CS pin is changed from 10 to 15 for this hardware.
 
 Full VLCB             28074/1315
 
+### VLCBLCDBut_1280
+
+This is code to use the DFRobot LCD shield with buttons. This is running currently without events.
+
+This is a version for the MEGA 1280
+
+Note that the CS pin is changed from 10 to 53 for this hardware. INT pin is 19.
+
+No LED user service   27292/1102
+
 ### VLCBLCDButTsk
 
 This is the same code as above, with TaskManagerIO used to control the code for the analog buttons. This is very tight on memory and I want to experiment to see what of VLCB I can remove to save memory.
