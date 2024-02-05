@@ -35,6 +35,14 @@ NoLEDUserService      31072/1265
 
 This means that the overhead for the task manager is about 4k memory but not much data.
 
+This module is now too big for a UNO.
+
+### VLCBLCDButTsk_1280
+
+This is a version of the previous example for the MEGA 1280 with the same pin changes.
+
+NoLEDUserService      35198/12691
+
 ### VLCB_DUE3EEPROM
 
 This example is running on a CANDUE with a dual CAN interface.
