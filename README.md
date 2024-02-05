@@ -1,8 +1,8 @@
 # VLCB-Arduino-Examples
  
-Examples using the VLCB Arduino library
+Examples using the VLCB Arduino library updated for the new version of the library in February 2024.
  
-These examples have now been autoformatted. 
+These examples have now been autoformatted.
  
 ## Arduino UNO Examples
 
