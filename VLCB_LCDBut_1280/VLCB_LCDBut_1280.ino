@@ -12,6 +12,7 @@
 //       In any case, the button and LEDs are hidden behind the display shield.
 ///////////////////////////////////////////////////////////////////////////////////
 // Pin Use map MEGA 1280
+// Digital pin 2          not used
 // Digital pin 3 (PWM)    LED 0
 // Digital pin 4          LCD pin_d4
 // Digital pin 5 (PWM)    LCD pin_d5
