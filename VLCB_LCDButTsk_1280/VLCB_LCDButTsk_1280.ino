@@ -36,6 +36,18 @@
 // Digital / Analog pin 4     Not Used - reserved for I2C
 // Digital / Analog pin 5     Not Used - reserved for I2C
 //////////////////////////////////////////////////////////////////////////
+// Digital pin 19          Interupt CAN
+// SPI pins on a MEGA 1280 or MEGA 2560. No wires are connected to the sockets.
+// Digital pin 50 (MOSI)  SI    CAN  Do not use for something else
+// Digital pin 51 (MISO)  SO    CAN  Do not use for something else
+// Digital pin 52 (SCK)   SCK   CAN  Do not use for something else
+// Digital pin 53 (SS)    CS    CAN  Directly connected at the moment.
+//////////////////////////////////////////////////////////////////////////
+
+// Define for either 1280 or 2560 MEGA
+#if defined(ARDUINO_AVR_MEGA2560) || defined(ARDUINO_AVR_MEGA)
+#define ARDUINO_MEGA
+#endif
 
 // IoAbstraction libraries
 #include <IoAbstraction.h>
@@ -150,12 +162,12 @@ int y = 0;
 // This is following the methods in EzyBus_master to provide error messages.
 // These have been limited to 16 chars to go on an LCD 2 by 16 display.
 // blank_string is used to cancel an error message.
-const char blank_string[] PROGMEM = "                ";
-const char error_string_0[] PROGMEM = "no error";
-const char error_string_1[] PROGMEM = "Test message";
-const char error_string_2[] PROGMEM = "Emergency Stop";
-const char error_string_3[] PROGMEM = "CANbus error";
-const char error_string_4[] PROGMEM = "invalid error";
+const char blank_string[]   PROGMEM  = "                ";
+const char error_string_0[] PROGMEM  = "no error";
+const char error_string_1[] PROGMEM  = "Test message";
+const char error_string_2[] PROGMEM  = "Emergency Stop";
+const char error_string_3[] PROGMEM  = "CANbus error";
+const char error_string_4[] PROGMEM  = "invalid error";
 
 const char* const error_string_table[] PROGMEM = {
   blank_string, error_string_0, error_string_1, error_string_2, error_string_3, error_string_4
