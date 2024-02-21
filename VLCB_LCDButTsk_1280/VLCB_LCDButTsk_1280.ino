@@ -15,9 +15,8 @@
 //       This is because the display uses the same pins.
 //       In any case, the button and LEDs are hidden behind the display shield.
 ///////////////////////////////////////////////////////////////////////////////////
-// Pin Use map UNO:
-// Digital pin 2          Interupt CAN
-// Digital pin 3 (PWM)    Not used
+// Pin Use map MEGA 1280
+// Digital pin 3 (PWM)    LED 0
 // Digital pin 4          LCD pin_d4
 // Digital pin 5 (PWM)    LCD pin_d5
 // Digital pin 6 (PWM)    LCD pin_d6
