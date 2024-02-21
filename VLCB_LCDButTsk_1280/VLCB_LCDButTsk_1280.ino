@@ -514,7 +514,7 @@ void loop()
   //
   byte s = can2515.canp->errorFlagRegister();
   if (s != 0 && !have_error_flag) {
-    Serial << F("> error flag register is non-zero") << endl;
+    Serial << F("> error flag register is non-zero: ") << s << endl;
     have_error_flag = true;
   }
 
