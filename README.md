@@ -45,13 +45,15 @@ This is a version for the MEGA 1280
 
 Note that the CS pin is changed from 10 to 53 for this hardware. INT pin is 19.
 
-No LED user service   27292/1102
+No LED user service   27304/1102
 
 ### VLCBLCDButTsk_1280
 
 This is a version of the VLCBLCDButTsk example for the MEGA 1280 with the same pin changes.
 
-NoLEDUserService      35198/12691
+I have corrected it to add the task to update the display when buttons are pressed.
+
+No LED User Service      35268/1291
 
 ## Arduino DUE examples
 
@@ -73,7 +75,7 @@ It is important to have the libraries due_can 2.1.6 and can_common 0.3.0 install
 
 There is a residual problem with the CANID allocated which is to be worked on.
 
-John Fletcher 2/12/2023 
+John Fletcher 21/2/2023 
 
 
 
