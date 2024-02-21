@@ -11,6 +11,52 @@
 //       This is because the display uses the same pins.
 //       In any case, the button and LEDs are hidden behind the display shield.
 ///////////////////////////////////////////////////////////////////////////////////
+// Pin Use map MEGA 1280
+// Digital pin 3 (PWM)    LED 0
+// Digital pin 4          LCD pin_d4
+// Digital pin 5 (PWM)    LCD pin_d5
+// Digital pin 6 (PWM)    LCD pin_d6
+// Digital pin 7          LCD pin_d7
+// Digital pin 8          LCD pin_RS
+// Digital pin 9 (PWM)    LCD pin_EN
+// Digital pin 10         LCD backlight pin
+// Digital pin 11 (MOSI)  SI    CAN
+// Digital pin 12 (MISO)  SO    CAN
+// Digital pin 13 (SCK)   Sck   CAN
+
+// Digital / Analog pin 0  Analog input from buttons
+// Digital / Analog pin 1 (SS)   
+// Digital / Analog pin 2     Switch 0
+// Digital / Analog pin 3     Bell/buzzer use.
+// Digital / Analog pin 4     Not Used - reserved for I2C
+// Digital / Analog pin 5     Not Used - reserved for I2C
+//////////////////////////////////////////////////////////////////////////
+// Digital pin 19          Interupt CAN
+// SPI pins on a MEGA 1280 or MEGA 2560. No wires are connected to the sockets.
+// Digital pin 50 (MOSI)  SI    CAN  Do not use for something else
+// Digital pin 51 (MISO)  SO    CAN  Do not use for something else
+// Digital pin 52 (SCK)   SCK   CAN  Do not use for something else
+// Digital pin 53 (SS)    CS    CAN  Directly connected at the moment.
+//////////////////////////////////////////////////////////////////////////
+
+// Define for either 1280 or 2560 MEGA
+#if defined(ARDUINO_AVR_MEGA2560) || defined(ARDUINO_AVR_MEGA)
+#define ARDUINO_MEGA
+#endif
+
+// IoAbstraction libraries
+#include <IoAbstraction.h>
+#include <DfRobotInputAbstraction.h>
+#include <TaskManagerIO.h>
+#include <DeviceEvents.h>
+// Note that this header defines LiquidCrystal.h so making sure that LiquidCrystal.h is not read as well.
+#include <LiquidCrystalIO.h> 
+
+/// This uses the default settings for analog ranges.
+IoAbstractionRef dfRobotKeys = inputFromDfRobotShield();
+
+/// It is in fact set as default defining dfRobotKeys.
+#define ANALOG_IN_PIN A0
 
 // 3rd party libraries
 #include <Streaming.h>
