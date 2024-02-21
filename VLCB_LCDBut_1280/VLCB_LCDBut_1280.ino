@@ -130,7 +130,6 @@ Using data from here:
 https://wiki.dfrobot.com/Arduino_LCD_KeyPad_Shield__SKU__DFR0009_
 I have also played with the values.
 */
-#include <LiquidCrystal.h>
 //LCD pin to Arduino
 const int pin_RS = 8;
 const int pin_EN = 9;
