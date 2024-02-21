@@ -1,7 +1,16 @@
 // VLCB_LCDBut_1280
+// Version of the following code for the CANshield on a MEGA 1280
+// CBUS_LCDBut
 // This is a version of a code with a long name.
 // LCDshieldButtonsSerialDFRobot.ino 
-// Adapted to run with VLCB on a MEGA 1280 with changed pins.
+// LCD shield with buttons example code
+// MEGA 1280 with changed pins.
+
+//////////////////////////////////////////////////////////////////////////////////
+// NOTE: This code does not support the Button and LEDs for CBUS configuration.
+//       This is because the display uses the same pins.
+//       In any case, the button and LEDs are hidden behind the display shield.
+///////////////////////////////////////////////////////////////////////////////////
 
 // 3rd party libraries
 #include <Streaming.h>
