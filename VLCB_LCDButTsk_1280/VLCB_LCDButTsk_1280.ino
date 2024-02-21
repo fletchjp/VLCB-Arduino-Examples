@@ -481,6 +481,8 @@ void setup()
   // This is at the end of setup()
   //taskManager.scheduleFixedRate(250, checkA0);
 
+  taskManager.registerEvent(&drawingEvent);
+
   // end of setup
   Serial << F("> ready") << endl
          << endl;
