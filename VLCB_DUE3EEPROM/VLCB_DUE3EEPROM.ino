@@ -355,10 +355,6 @@ void setupVLCB()
   VLCB::Parameters params(modconfig);
   params.setVersion(VER_MAJ, VER_MIN, VER_BETA);
   params.setModuleId(MODULE_ID);
-//#ifdef USE_EXTERNAL_EEPROM
-// Put parameters into the EEPROM
-//modconfig.writeBytesEEPROM(config.getEEPROMsize()+1,params.getParams(),params.size());
-//#endif
   // assign to controller
   controller.setParams(params.getParams());
   controller.setName((byte *)mname);
