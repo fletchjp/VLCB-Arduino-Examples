@@ -202,10 +202,10 @@
 ////////////////////////////////////////////////////////////////////////////
 // VLCB library header files
 // Uncomment this to use external EEPROM
-//#define USE_EXTERNAL_EEPROM
+#define USE_EXTERNAL_EEPROM
 ////////////////////////////////////////////////////////////////////////////
 #include <Controller.h>  // Controller class
-#include "CANSAM3X8E.h"  // CAN controller
+#include "VCANSAM3X8E.h" // CAN controller
 #include <Switch.h>      // pushbutton switch
 #include <LED.h>         // VLCB LEDs
 #ifdef USE_EXTERNAL_EEPROM
@@ -231,7 +231,7 @@
 
 // constants
 const byte VER_MAJ = 1;     // code major version
-const char VER_MIN = 'b';   // code minor version
+const char VER_MIN = 'c';   // code minor version
 const byte VER_BETA = 1;    // code beta sub-version
 const byte MODULE_ID = 99;  // VLCB module type
 
@@ -243,17 +243,17 @@ VLCB::Configuration modconfig(&externalStorage);  // configuration object
 VLCB::DueEepromEmulationStorage dueStorage;  // DUE simulated EEPROM
 VLCB::Configuration modconfig(&dueStorage);  // configuration object
 #endif
-VLCB::CANSAM3X8E canSam3x8e;  // CAN transport object
+VLCB::VCANSAM3X8E vcanSam3x8e;  // CAN transport object
 //VLCB::LEDUserInterface ledUserInterface(LED_GRN, LED_YLW, SWITCH0);
-VLCB::SerialUserInterface serialUserInterface(&canSam3x8e);
+VLCB::SerialUserInterface serialUserInterface(&vcanSam3x8e);
 //VLCB::CombinedUserInterface combinedUserInterface(&ledUserInterface, &serialUserInterface);
 VLCB::MinimumNodeService mnService;
-VLCB::CanService canService(&canSam3x8e);
+VLCB::CanService canService(&vcanSam3x8e);
 VLCB::NodeVariableService nvService;
 VLCB::EventConsumerService ecService;
 VLCB::EventTeachingService etService;
 VLCB::EventProducerService epService;
-VLCB::Controller controller( &modconfig, //&canSam3x8e,
+VLCB::Controller controller( &modconfig,
                             { &mnService, &serialUserInterface, &canService, &nvService, &ecService, &epService, &etService });  // Controller object
 
 // module objects
@@ -392,8 +392,8 @@ void setupVLCB()
   // CBUS.setNumBuffers(2);         // more buffers = more memory used, fewer = less
   // CBUS.setOscFreq(16000000UL);   // select the crystal frequency of the CAN module
   // CBUS.setPins(10, 2);           // select pins for CAN bus CE and interrupt connections
-  canSam3x8e.setControllerInstance(0);  // only actually required for instance 1, instance 0 is the default
-  if (!canSam3x8e.begin()) {
+  vcanSam3x8e.setControllerInstance(0);  // only actually required for instance 1, instance 0 is the default
+  if (!vcanSam3x8e.begin()) {
     DEBUG_PRINT("***** CBUS.begin() FAILED *****");
     return false;
   }
