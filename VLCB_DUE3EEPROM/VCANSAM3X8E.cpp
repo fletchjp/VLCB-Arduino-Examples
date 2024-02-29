@@ -11,10 +11,11 @@
 
 // VLCB SAM3X8E library
 #include "CAN2515.h"
-#include "CANSAM3X8E.h"
+#include "VCANSAM3X8E.h"
 
 
-namespace VLCB {
+namespace VLCB
+{
 
 
 //
@@ -46,7 +47,7 @@ void format_message(CANFrame *msg)
 //
 /// constructor
 //
-CANSAM3X8E::CANSAM3X8E()
+VCANSAM3X8E::VCANSAM3X8E()
   : _num_rx_buffers(NUM_RX_BUFFS), _num_tx_buffers(NUM_TX_BUFFS), _csPin(MCP2515_CS), _intPin(MCP2515_INT), _osc_freq(OSCFREQ)
 {
   _instance = 0;
@@ -57,7 +58,7 @@ CANSAM3X8E::CANSAM3X8E()
 /// initialise the CAN controller and buffers, and attach the ISR
 //
 
-bool CANSAM3X8E::begin(bool poll, SPIClass spi)
+bool VCANSAM3X8E::begin(bool poll, SPIClass spi)
 {
 
   uint32_t init_ret;
@@ -86,13 +87,13 @@ bool CANSAM3X8E::begin(bool poll, SPIClass spi)
   return true;
 }
 
-bool CANSAM3X8E::available(void)
+bool VCANSAM3X8E::available(void)
 {
 
   return _can->available();
 }
 
-CANFrame CANSAM3X8E::getNextCanFrame(void)
+CANFrame VCANSAM3X8E::getNextCanFrame(void)
 {
 
   uint32_t ret;
@@ -126,7 +127,7 @@ CANFrame CANSAM3X8E::getNextCanFrame(void)
 /// send a CBUS message
 //
 
-bool CANSAM3X8E::sendCanFrame(CANFrame *msg)  // bool rtr, bool ext, byte priority)
+bool VCANSAM3X8E::sendCanFrame(CANFrame *msg)  // bool rtr, bool ext, byte priority)
 {
   // note default arguments put here as a fix are not needed.
   //bool rtr = false; bool ext = false; byte priority = DEFAULT_PRIORITY;
@@ -166,7 +167,7 @@ bool CANSAM3X8E::sendCanFrame(CANFrame *msg)  // bool rtr, bool ext, byte priori
 /// display the CAN bus status instrumentation
 //
 
-void CANSAM3X8E::printStatus(void)
+void VCANSAM3X8E::printStatus(void)
 {
 
   return;
@@ -176,7 +177,7 @@ void CANSAM3X8E::printStatus(void)
 /// reset the CAN driver
 //
 
-void CANSAM3X8E::reset(void)
+void VCANSAM3X8E::reset(void)
 {
 }
 
@@ -184,7 +185,7 @@ void CANSAM3X8E::reset(void)
 /// set the TX and RX pins
 //
 
-void CANSAM3X8E::setPins(byte txPin, byte rxPin)
+void VCANSAM3X8E::setPins(byte txPin, byte rxPin)
 {
 
   return;
@@ -194,7 +195,7 @@ void CANSAM3X8E::setPins(byte txPin, byte rxPin)
 /// set the depth of the TX and RX queues
 //
 
-void CANSAM3X8E::setNumBuffers(byte num)
+void VCANSAM3X8E::setNumBuffers(byte num)
 {
 
   return;
@@ -206,7 +207,7 @@ void CANSAM3X8E::setNumBuffers(byte num)
 /// set the CAN controller peripheral instance, there are two, default is zero
 //
 
-void CANSAM3X8E::setControllerInstance(byte instance)
+void VCANSAM3X8E::setControllerInstance(byte instance)
 {
 
   Serial << "> setting CAN controller instance to " << instance << endl;
