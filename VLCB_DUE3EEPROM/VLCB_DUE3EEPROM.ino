@@ -202,7 +202,7 @@
 ////////////////////////////////////////////////////////////////////////////
 // VLCB library header files
 // Uncomment this to use external EEPROM
-#define USE_EXTERNAL_EEPROM
+//#define USE_EXTERNAL_EEPROM
 ////////////////////////////////////////////////////////////////////////////
 #include <Controller.h>  // Controller class
 #include "VCANSAM3X8E.h" // CAN controller
@@ -355,10 +355,10 @@ void setupVLCB()
   VLCB::Parameters params(modconfig);
   params.setVersion(VER_MAJ, VER_MIN, VER_BETA);
   params.setModuleId(MODULE_ID);
-#ifdef USE_EXTERNAL_EEPROM
+//#ifdef USE_EXTERNAL_EEPROM
 // Put parameters into the EEPROM
 //modconfig.writeBytesEEPROM(config.getEEPROMsize()+1,params.getParams(),params.size());
-#endif
+//#endif
   // assign to controller
   controller.setParams(params.getParams());
   controller.setName((byte *)mname);
