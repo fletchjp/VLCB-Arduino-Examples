@@ -54,6 +54,9 @@ VCANSAM3X8E::VCANSAM3X8E()
   _can = &Can0;
 }
 
+VCANSAM3X8E::~VCANSAM3X8E()
+{}
+
 //
 /// initialise the CAN controller and buffers, and attach the ISR
 //
