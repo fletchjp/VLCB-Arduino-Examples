@@ -390,10 +390,10 @@ void setupVLCB()
   // CBUS.setPins(10, 2);           // select pins for CAN bus CE and interrupt connections
   vcanSam3x8e.setControllerInstance(0);  // only actually required for instance 1, instance 0 is the default
   if (!vcanSam3x8e.begin()) {
-    DEBUG_PRINT("***** CBUS.begin() FAILED *****");
-    return false;
+    DEBUG_PRINT("***** error starting VLCB *****");
+    //return false;
   }
-  return true;
+  //return true;
 }
 
 
