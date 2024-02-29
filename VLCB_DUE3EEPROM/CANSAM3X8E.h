@@ -1,4 +1,4 @@
-// Copyright (C) Sven Rosvall (sven@rosvall.ie) (C( John Fletcher (john@bunbury28.plus.com)
+// Copyright (C) Sven Rosvall (sven@rosvall.ie) (C) John Fletcher (john@bunbury28.plus.com)
 // This file is part of VLCB-Arduino project on https://github.com/SvenRosvall/VLCB-Arduino
 // Licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 // The full licence can be found at: http://creativecommons.org/licenses/by-nc-sa/4.0/
@@ -10,10 +10,10 @@
 #include <Controller.h>
 #include <CanTransport.h>
 #include <SPI.h>
-//#include <ACAN2515.h>           // ACAN2515 library
 #include <due_can.h>  // Due CAN library header file
 
-namespace VLCB {
+namespace VLCB
+{
 
 // constants
 // These are getting defined somewhere else.....
@@ -29,11 +29,12 @@ namespace VLCB {
 /// to support the SAM3X8E CAN controllers for Arduino DUE.
 //
 
-class CANSAM3X8E : public CanTransport
+class VCANSAM3X8E : public CanTransport
 {
 public:
 
-  CANSAM3X8E();
+  VCANSAM3X8E();
+  virtual ~VCANSAM3X8E();
 
   // these methods are declared virtual in the base class and must be implemented by the derived class
 #ifdef ARDUINO_ARCH_RP2040
