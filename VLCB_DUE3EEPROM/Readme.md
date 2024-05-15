@@ -20,6 +20,9 @@ John Fletcher 13/11/2023
 
 5/2/2024 Updated for the latest version of the VLCB Arduino library.
 
+15/5/2024 I have now fixed a bug in due_can.cpp which means that this should now correctly find the CANID.
+
+
 
 
 
