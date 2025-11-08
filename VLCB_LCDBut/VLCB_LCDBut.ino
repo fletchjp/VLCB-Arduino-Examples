@@ -8,20 +8,21 @@
 
 ////////////////////////////////////////////////////////////////////////////
 // VLCB library header files
-#include <Controller.h>     // Controller class
+//#include <Controller.h>     // Controller class
+#include <VLCB.h>
 #include <CAN2515.h>        // CAN controller
-#include <Switch.h>         // pushbutton switch
-#include <LED.h>            // VLCB LEDs
-#include <Configuration.h>  // module configuration
-#include <Parameters.h>     // VLCB parameters
-#include <vlcbdefs.hpp>     // VLCB constants
-#include "MinimumNodeService.h"
-#include "CanService.h"
-#include "NodeVariableService.h"
-#include "EventConsumerService.h"
-#include "EventProducerService.h"
-#include "EventTeachingService.h"
-#include "SerialUserInterface.h"
+//#include <Switch.h>         // pushbutton switch
+//#include <LED.h>            // VLCB LEDs
+//#include <Configuration.h>  // module configuration
+//#include <Parameters.h>     // VLCB parameters
+//#include <vlcbdefs.hpp>     // VLCB constants
+//#include "MinimumNodeService.h"
+//#include "CanService.h"
+//#include "NodeVariableService.h"
+//#include "EventConsumerService.h"
+//#include "EventProducerService.h"
+//#include "EventTeachingService.h"
+//#include "SerialUserInterface.h"
 //#include "CombinedUserInterface.h"
 
 // constants
@@ -34,18 +35,19 @@ const byte LED_GRN = 4;  // VLCB green Unitialised LED pin
 const byte LED_YLW = 7;  // VLCB yellow Normal LED pin
 const byte SWITCH0 = 8;  // VLCB push button switch pin
 
-// Controller objects
-VLCB::Configuration modconfig;  // configuration object
+// Service objects
+//VLCB::Configuration modconfig;  // configuration object
 VLCB::CAN2515 can2515;          // CAN transport object
-VLCB::SerialUserInterface serialUserInterface(&can2515);
+VLCB::SerialUserInterface serialUserInterface; //(&can2515);
 VLCB::MinimumNodeService mnService;
-VLCB::CanService canService(&can2515);
+VLCB::CanService canServiceWithDiagnostics(&can2515);
 VLCB::NodeVariableService nvService;
+VLCB::ConsumeOwnEventsService coeService;
 VLCB::EventConsumerService ecService;
 VLCB::EventTeachingService etService;
 VLCB::EventProducerService epService;
-VLCB::Controller controller( &modconfig,
-                            { &mnService, &serialUserInterface, &canService, &nvService, &ecService, &epService, &etService });  // Controller object
+//VLCB::Controller controller( &modconfig,
+//                            { &mnService, &serialUserInterface, &canService, &nvService, &ecService, &epService, &etService });  // Controller object
 
 // module name, must be 7 characters, space padded.
 unsigned char mname[7] = { 'L', 'C', 'D', 'B', 'u', 't', ' ' };
