@@ -3,6 +3,8 @@
 Examples using the VLCB Arduino library updated for the new version of the library in February 2024.
  
 These examples have now been autoformatted.
+
+NOTE: There have been changes to the VLCB Arduino library and these codes may well need to be changed as a result.
  
 ## Arduino UNO Examples
 
