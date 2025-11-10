@@ -2,15 +2,17 @@
 // This is a version of a code with a long name.
 // LCDshieldButtonsSerialDFRobot.ino 
 // Adapted to run with VLCB
+// This code is being updated for the 2025 version of the VLCB library.
 
 // 3rd party libraries
 #include <Streaming.h>
 
 ////////////////////////////////////////////////////////////////////////////
 // VLCB library header files
-//#include <Controller.h>     // Controller class
 #include <VLCB.h>
 #include <CAN2515.h>        // CAN controller
+// Old VLCB library header files
+//#include <Controller.h>     // Controller class
 //#include <Switch.h>         // pushbutton switch
 //#include <LED.h>            // VLCB LEDs
 //#include <Configuration.h>  // module configuration
@@ -26,9 +28,10 @@
 //#include "CombinedUserInterface.h"
 
 // constants
-const byte VER_MAJ = 1;     // code major version
-const char VER_MIN = 'b';   // code minor version
+const byte VER_MAJ = 2;     // code major version
+const char VER_MIN = 'a';   // code minor version
 const byte VER_BETA = 0;    // code beta sub-version
+const byte MANUFACTURER = MANU_DEV; // for boards in development.
 const byte MODULE_ID = 99;  // VLCB module type
 
 const byte LED_GRN = 4;  // VLCB green Unitialised LED pin
@@ -38,14 +41,16 @@ const byte SWITCH0 = 8;  // VLCB push button switch pin
 // Service objects
 //VLCB::Configuration modconfig;  // configuration object
 VLCB::CAN2515 can2515;          // CAN transport object
+VLCB::LEDUserInterface ledUserInterface(LED_GRN, LED_YLW, SWITCH0);
 VLCB::SerialUserInterface serialUserInterface; //(&can2515);
 VLCB::MinimumNodeService mnService;
-VLCB::CanService canServiceWithDiagnostics(&can2515);
+VLCB::CanServiceWithDiagnostics canService(&can2515); // Changed
 VLCB::NodeVariableService nvService;
 VLCB::ConsumeOwnEventsService coeService;
 VLCB::EventConsumerService ecService;
 VLCB::EventTeachingService etService;
 VLCB::EventProducerService epService;
+// See in setupVLCB
 //VLCB::Controller controller( &modconfig,
 //                            { &mnService, &serialUserInterface, &canService, &nvService, &ecService, &epService, &etService });  // Controller object
 
@@ -97,16 +102,35 @@ int y = 0;
 //
 void setupVLCB()
 {
+  VLCB::checkStartupAction(LED_GRN, LED_YLW, SWITCH0);
+
+  VLCB::setServices({
+    &mnService, &ledUserInterface, &serialUserInterface, &canService, &nvService,
+    &ecService, &epService, &etService, &coeService});
+
   // set config layout parameters
-  modconfig.EE_NVS_START = 10;
-  modconfig.EE_NUM_NVS = 10;
-  modconfig.EE_EVENTS_START = 20;
-  modconfig.EE_MAX_EVENTS = 32;
-  modconfig.EE_PRODUCED_EVENTS = 1;
-  modconfig.EE_NUM_EVS = 1;
+  VLCB::setNumNodeVariables(10);
+  VLCB::setMaxEvents(32);
+  VLCB::setNumProducedEvents(1);
+  VLCB::setNumEventVariables(2); // EV1: Produced event ; EV2: LED1
+
+  // set config layout parameters
+  //modconfig.EE_NVS_START = 10;
+  //modconfig.EE_NUM_NVS = 10;
+  //modconfig.EE_EVENTS_START = 20;
+  //modconfig.EE_MAX_EVENTS = 32;
+  //modconfig.EE_PRODUCED_EVENTS = 1;
+  //modconfig.EE_NUM_EVS = 1;
+
+  // set module parameters
+  VLCB::setVersion(VER_MAJ, VER_MIN, VER_BETA);
+  VLCB::setModuleId(MANUFACTURER, MODULE_ID);
+
+  // set module name
+  VLCB::setName(mname);
 
   // initialise and load configuration
-  controller.begin();
+/*  controller.begin();
 
   const char *modeString;
   switch (modconfig.currentMode) {
@@ -118,18 +142,39 @@ void setupVLCB()
   Serial << F(", CANID = ") << modconfig.CANID;
   Serial << F(", NN = ") << modconfig.nodeNum << endl;
   Serial << F("> mode = (") << _HEX(modconfig.currentMode) << ") " << modeString;
+*/
+
+  // register our VLCB event handler, to receive event messages of learned events
+  ecService.setEventHandler(eventhandler);
+
+// configure and start CAN bus and VLCB message processing
+  can2515.setNumBuffers(2, 2);      // more buffers = more memory used, fewer = less
+  can2515.setOscFreq(16000000UL);   // select the crystal frequency of the CAN module
+  can2515.setPins(10, 2);           // select pins for CAN bus CE and interrupt connections
+  if (!can2515.begin())
+  {
+    Serial << F("> error starting VLCB") << endl;
+  }
+
+  // initialise and load configuration
+  VLCB::begin();
+
+  Serial << F("> mode = (") << _HEX(VLCB::getCurrentMode()) << ") " << VLCB::Configuration::modeString(VLCB::getCurrentMode());
+  Serial << F(", CANID = ") << VLCB::getCANID();
+  Serial << F(", NN = ") << VLCB::getNodeNum() << endl;
+
 
   // show code version and copyright notice
   printConfig();
 
   // set module parameters
-  VLCB::Parameters params(modconfig);
-  params.setVersion(VER_MAJ, VER_MIN, VER_BETA);
-  params.setModuleId(MODULE_ID);
+  //VLCB::Parameters params(modconfig);
+  //params.setVersion(VER_MAJ, VER_MIN, VER_BETA);
+  //params.setModuleId(MODULE_ID);
 
   // assign to Controller
-  controller.setParams(params.getParams());
-  controller.setName(mname);
+  //controller.setParams(params.getParams());
+  //controller.setName(mname);
 
   //  {
   //    Serial << F("> switch was pressed at startup in Uninitialised mode") << endl;
@@ -137,24 +182,17 @@ void setupVLCB()
   //  }
 
   // opportunity to set default NVs after module reset
-  if (modconfig.isResetFlagSet()) {
-    Serial << F("> module has been reset") << endl;
-    modconfig.clearResetFlag();
-  }
+//  if (modconfig.isResetFlagSet()) {
+ //   Serial << F("> module has been reset") << endl;
+ //   modconfig.clearResetFlag();
+ // }
 
   // register our VLCB event handler, to receive event messages of learned events
   ecService.setEventHandler(eventhandler);
 
   // set Controller LEDs to indicate mode
-  controller.indicateMode(modconfig.currentMode);
+  //controller.indicateMode(modconfig.currentMode);
 
-  // configure and start CAN bus and VLCB message processing
-  can2515.setNumBuffers(2, 1);     // more buffers = more memory used, fewer = less
-  can2515.setOscFreq(16000000UL);  // select the crystal frequency of the CAN module
-  can2515.setPins(15, 2);          // select pins for CAN bus CE and interrupt connections
-  if (!can2515.begin()) {
-    Serial << F("> error starting VLCB") << endl;
-  }
 }
 
 bool have_error_flag;
@@ -252,7 +290,8 @@ void loop()
   //
   /// do VLCB message, switch and LED processing
   //
-  controller.process();
+  //controller.process();
+  VLCB::process();
 
   //
   /// check CAN message buffers
